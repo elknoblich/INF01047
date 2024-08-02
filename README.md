@@ -1,1 +1,1 @@
-# INF01047
+# Trabalho final de Fundamentos de Computação Gráfica - (INF01047)
