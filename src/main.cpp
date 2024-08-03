@@ -372,7 +372,9 @@ int main(int argc, char *argv[]) {
          prev_time     = current_time;
 
          glm::vec4 w_vector = -camera_view_vector / norm(camera_view_vector);
+         w_vector.y         = 0.0f;
          glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector) / norm(crossproduct(camera_up_vector, w_vector));
+         u_vector.y         = 0.0f;
 
          if (g_W_pressed)
             camera_position_c += -w_vector * speed * delta_t;
