@@ -12,4 +12,4 @@
 - [ ] Modelos de Interpolação de Phong e Gouraud
 - [ ] Mapeamento de texturas em todos os objetos
 - [ ] Movimentação com curva Bézier cúbica
-- [ ] Animações baseadas no tempo  
+- [ ] Animações baseadas no tempo 
