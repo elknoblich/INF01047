@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
    LoadShadersFromFiles();
 
    // Carregamos duas imagens para serem utilizadas como textura
-   LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
+   LoadTextureImage("../../data/floor_tiles_04_diff_4k.jpg");       // TextureImage0
    LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
 
    // Construímos a representação de objetos geométricos através de malhas de triângulos
@@ -400,7 +400,7 @@ int main(int argc, char *argv[]) {
       // Note que, no sistema de coordenadas da câmera, os planos near e far
       // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
       float nearplane = -0.1f;  // Posição do "near plane"
-      float farplane  = -10.0f; // Posição do "far plane"
+      float farplane  = -40.0f; // Posição do "far plane"
 
       if (g_UsePerspectiveProjection) {
          // Projeção Perspectiva.
@@ -431,7 +431,7 @@ int main(int argc, char *argv[]) {
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
-
+      /*
       // Desenhamos o modelo da esfera
       model = Matrix_Translate(-1.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(0.6f) * Matrix_Rotate_X(0.2f) *
           Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
@@ -459,7 +459,11 @@ int main(int argc, char *argv[]) {
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
       // Imprimimos na tela os ângulos de Euler que controlam a rotação do
-      // terceiro cubo.
+      .*/
+      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, PLANE);
+      DrawVirtualObject("the_plane");
       TextRendering_ShowEulerAngles(window);
 
       // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
