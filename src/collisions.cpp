@@ -19,6 +19,19 @@ class AABB {
       bbox_min                  = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
       bbox_min                  = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
    };
+
+   AABB(glm::vec4 center_point, glm::vec4 size) {
+      vec4::p1   = center_point + size;
+      vec4::p2   = center_point - size;
+      bbox_min.x = std::min(p1.x, p2.x);
+      bbox_min.y = std::min(p1.y, p2.y);
+      bbox_min.z = std::min(p1.z, p2.z);
+      bbox_max.x = std::max(p1.x, p2.x);
+      bbox_max.y = std::max(p1.y, p2.y);
+      bbox_max.z = std::max(p1.z, p2.z);
+   };
+
+
    glm::vec3 get_min() { return bbox_min; };
    glm::vec3 get_max() { return bbox_max };
 };
@@ -29,5 +42,4 @@ bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
    glm::vec3 aabb_min_2 = aabb1.get_min();
 
    return (aMin.x <= bMax.x && aMax.x >= bMin.x) && (aMin.y <= bMax.y && aMax.y >= bMin.y) && (aMin.z <= bMax.z && aMax.z >= bMin.z);
-}
 }

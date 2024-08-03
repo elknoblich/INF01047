@@ -334,6 +334,8 @@ int main(int argc, char *argv[]) {
    float prev_time             = (float)glfwGetTime();
    float speed                 = 2.0f;
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
+   glm::vec4 camera_aabb_size  = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
+
    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
    while (!glfwWindowShouldClose(window)) {
       // Aqui executamos as operações de renderização
