@@ -22,6 +22,7 @@ uniform mat4 projection;
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
+#define CUBE 3
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -116,6 +117,10 @@ void main()
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x;
         V = texcoords.y;
+    }
+    else if (object_id == CUBE){
+        U = 0.0;
+        V = 0.0;
     }
 
     // Obtemos a refletância difusa a partir da leitura da imagem TextureImage0

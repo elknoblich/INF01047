@@ -29,6 +29,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>  // Criação de contexto OpenGL 3.3
@@ -310,6 +311,10 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&planemodel);
    BuildTrianglesAndAddToVirtualScene(&planemodel);
 
+   ObjModel cubemodel("../../data/cube.obj");
+   ComputeNormals(&cubemodel);
+   BuildTrianglesAndAddToVirtualScene(&cubemodel);
+
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -327,7 +332,7 @@ int main(int argc, char *argv[]) {
    glFrontFace(GL_CCW);
 
    float prev_time             = (float)glfwGetTime();
-   float speed                 = 0.5;
+   float speed                 = 2.0f;
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
    while (!glfwWindowShouldClose(window)) {
@@ -433,6 +438,7 @@ int main(int argc, char *argv[]) {
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
+#define CUBE   3
       /*
       // Desenhamos o modelo da esfera
       model = Matrix_Translate(-1.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(0.6f) * Matrix_Rotate_X(0.2f) *
@@ -462,10 +468,32 @@ int main(int argc, char *argv[]) {
       DrawVirtualObject("the_plane");
       // Imprimimos na tela os ângulos de Euler que controlam a rotação do
       .*/
+
+      model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, CUBE);
+      DrawVirtualObject("Cube");
+
+      model = Matrix_Translate(-10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, CUBE);
+      DrawVirtualObject("Cube");
+
+      model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, CUBE);
+      DrawVirtualObject("Cube");
+
+      model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, CUBE);
+      DrawVirtualObject("Cube");
+
       model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
+
       TextRendering_ShowEulerAngles(window);
 
       // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
