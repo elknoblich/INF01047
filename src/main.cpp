@@ -475,18 +475,9 @@ int main(int argc, char *argv[]) {
 
       .*/
 
-      model = Matrix_Translate(0.0f, 0.0f, 0.0f) * Matrix_Scale(2.0f, 2.0f, 2.0f);
-      AABB aabb_cube10(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 10);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
 
       model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
       AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 1);
-      //glm::vec3 min = g_VirtualScene["Cube"].bbox_min;
-      //glm::vec3 max = g_VirtualScene["Cube"].bbox_max;
-      //printf("Cube 1 Local Min: (%f, %f, %f)\n", min.x, min.y, min.z);
-      //printf("Cube 1 Max: (%f, %f, %f)\n", max.x, max.y, max.z);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, CUBE);
       DrawVirtualObject("Cube");
@@ -514,22 +505,16 @@ int main(int argc, char *argv[]) {
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
-      cam_collision_map[aabb_cube1]  = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
-      cam_collision_map[aabb_cube2]  = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);
-      cam_collision_map[aabb_cube3]  = AABB_to_AABB_intersec(cam_aabb, aabb_cube3);
-      cam_collision_map[aabb_cube4]  = AABB_to_AABB_intersec(cam_aabb, aabb_cube4);
-      cam_collision_map[aabb_cube10] = AABB_to_AABB_intersec(cam_aabb, aabb_cube10);
+      cam_collision_map[aabb_cube1] = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
+      cam_collision_map[aabb_cube2] = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);
+      cam_collision_map[aabb_cube3] = AABB_to_AABB_intersec(cam_aabb, aabb_cube3);
+      cam_collision_map[aabb_cube4] = AABB_to_AABB_intersec(cam_aabb, aabb_cube4);
 
       //glm::vec3 min1 = aabb_cube1.get_min();
       //glm::vec3 max1 = aabb_cube1.get_max();
       //printf("Cube 1 Min: (%f, %f, %f)\n", min1.x, min1.y, min1.z);
       //printf("Cube 1 Max: (%f, %f, %f)\n", max1.x, max1.y, max1.z);
 
-      if (cam_collision_map[aabb_cube10])
-         printf("intersec cube 10\n");
-      else
-         printf("no intersec\n");
-      /*
       if (cam_collision_map[aabb_cube1])
          printf("Colision cube 1\n");
 
@@ -540,7 +525,7 @@ int main(int argc, char *argv[]) {
          printf("Colision cube 3\n");
 
       if (cam_collision_map[aabb_cube4])
-         printf("Colision cube 4\n");*/
+         printf("Colision cube 4\n");
 
       TextRendering_ShowEulerAngles(window);
 
