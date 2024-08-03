@@ -451,6 +451,13 @@ int main(int argc, char *argv[]) {
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
+
+      //
+      model = Matrix_Translate(3.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Rotate_Y(0.0f) * Matrix_Rotate_X(0.0f) *
+          Matrix_Scale(10.0f, 10.0f, 1.0f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, PLANE);
+      DrawVirtualObject("the_plane");
       // Imprimimos na tela os ângulos de Euler que controlam a rotação do
       // terceiro cubo.
       TextRendering_ShowEulerAngles(window);
