@@ -317,6 +317,10 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&cubemodel);
    BuildTrianglesAndAddToVirtualScene(&cubemodel);
 
+   ObjModel buttonmodel("../../data/model.obj");
+   ComputeNormals(&buttonmodel);
+   BuildTrianglesAndAddToVirtualScene(&buttonmodel);
+
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -445,6 +449,7 @@ int main(int argc, char *argv[]) {
 #define BUNNY  1
 #define PLANE  2
 #define CUBE   3
+#define BUTTON 4
       /*
       // Desenhamos o modelo da esfera
       model = Matrix_Translate(-1.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(0.6f) * Matrix_Rotate_X(0.2f) *
@@ -505,6 +510,11 @@ int main(int argc, char *argv[]) {
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
+
+      model = Matrix_Translate(-10.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, BUTTON);
+      DrawVirtualObject("object_0");
 
       cam_collision_map[aabb_cube1] = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
       cam_collision_map[aabb_cube2] = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);

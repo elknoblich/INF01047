@@ -40,8 +40,11 @@ SPHERE::SPHERE(glm::vec4 position, float radius, int id, glm::vec4 translation_v
    id       = id;
 }
 glm::vec4 SPHERE::get_center() { return position; }
+
 float SPHERE::get_radius() { return radius; }
+
 bool SPHERE::operator<(const SPHERE &other) const { return id < other.id; }
+
 bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb) {
 
    glm::vec4 closest_point;
