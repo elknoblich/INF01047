@@ -25,4 +25,20 @@ class AABB {
 
 bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2);
 
+class SPHERE {
+   private:
+   glm::vec4 position;
+   float radius;
+   int id;
+
+   public:
+   SPHERE(glm::vec4 position, float radius, int id, glm::vec4 translation_vec);
+   glm::vec4 get_center();
+   float get_radius();
+   //  SPHERE(AABB aabb, int id);
+   bool operator<(const SPHERE &other) const;
+};
+
+bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb);
+
 #endif

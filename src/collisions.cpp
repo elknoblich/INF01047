@@ -33,3 +33,25 @@ bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
 
    return (aMin.x <= bMax.x && aMax.x >= bMin.x) && (aMin.y <= bMax.y && aMax.y >= bMin.y) && (aMin.z <= bMax.z && aMax.z >= bMin.z);
 }
+
+SPHERE::SPHERE(glm::vec4 position, float radius, int id, glm::vec4 translation_vec) {
+   position = position + translation_vec;
+   radius   = radius;
+   id       = id;
+}
+glm::vec4 SPHERE::get_center() { return position; }
+float SPHERE::get_radius() { return radius; }
+bool SPHERE::operator<(const SPHERE &other) const { return id < other.id; }
+bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb) {
+
+   glm::vec4 closest_point;
+   closest_point.x = std::fmax(aabb.get_min().x, std::fmin(sphere.get_center().x, aabb.get_max().x));
+   closest_point.y = std::fmax(aabb.get_min().y, std::fmin(sphere.get_center().y, aabb.get_max().y));
+   closest_point.z = std::fmax(aabb.get_min().z, std::fmin(sphere.get_center().z, aabb.get_max().z));
+   closest_point.w = 1.0f;
+
+   float dist_sq   = glm::length(sphere.get_center() - closest_point);
+   float radius_sq = sphere.get_radius() * sphere.get_radius();
+
+   return dist_sq < radius_sq;
+}

@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
    // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
    // de pixels, e com título "INF01047 ...".
    GLFWwindow *window;
-   window = glfwCreateWindow(800, 600, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+   window = glfwCreateWindow(800, 600, "INF01047 - Trabalho", NULL, NULL);
    if (!window) {
       glfwTerminate();
       fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
@@ -271,6 +271,7 @@ int main(int argc, char *argv[]) {
 
    // Indicamos que as chamadas OpenGL deverão renderizar nesta janela
    glfwMakeContextCurrent(window);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
    // Carregamento de todas funções definidas por OpenGL 3.3, utilizando a
    // biblioteca GLAD.
@@ -1113,6 +1114,27 @@ void CursorPosCallback(GLFWwindow *window, double xpos, double ypos) {
    // parâmetros que definem a posição da câmera dentro da cena virtual.
    // Assim, temos que o usuário consegue controlar a câmera.
 
+   float dx = xpos - g_LastCursorPosX;
+   float dy = ypos - g_LastCursorPosY;
+
+   // Atualizamos parâmetros da câmera com os deslocamentos
+   g_CameraTheta -= 0.01f * dx;
+   g_CameraPhi += 0.01f * dy;
+
+   // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
+   float phimax = 3.141592f / 2;
+   float phimin = -phimax;
+
+   if (g_CameraPhi > phimax)
+      g_CameraPhi = phimax;
+
+   if (g_CameraPhi < phimin)
+      g_CameraPhi = phimin;
+
+   // Atualizamos as variáveis globais para armazenar a posição atual do
+   // cursor como sendo a última posição conhecida do cursor.
+   g_LastCursorPosX = xpos;
+   g_LastCursorPosY = ypos;
    if (g_LeftMouseButtonPressed) {
       // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
       float dx = xpos - g_LastCursorPosX;
