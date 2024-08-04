@@ -41,5 +41,6 @@ class SPHERE {
 };
 
 bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb);
+bool moving_AABB_to_AABB(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float &t_first, float &t_last);
 
 #endif

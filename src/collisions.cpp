@@ -60,3 +60,51 @@ bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb) {
    float radius_sq = sphere.get_radius() * sphere.get_radius();
    return dist_sq < radius_sq;
 }
+
+bool moving_AABB_to_AABB(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float &t_first, float &t_last) {
+
+   if (AABB_to_AABB_intersec(moving_aabb, aabb)) {
+      t_first = t_last = 0.0f;
+      return true;
+   }
+
+   t_first = 0.0f;
+   t_last  = 1.0f;
+
+   glm::vec3 moving_aabb_max = moving_aabb.get_max();
+   glm::vec3 moving_aabb_min = moving_aabb.get_min();
+   glm::vec3 aabb_max        = aabb.get_max();
+   glm::vec3 aabb_min        = aabb.get_min();
+
+   for (int i = 0; i < 3; i++) {
+
+      if (velocity[i] < 0.0f) {
+
+         if (moving_aabb_max[i] < aabb_min[i])
+            return false;
+
+         if (aabb_max[i] < moving_aabb_min[i])
+            t_first = std::fmax((aabb_max[i] - moving_aabb_min[i]) / velocity[i], t_first);
+
+         if (moving_aabb_max[i] > aabb_min[i])
+            t_last = std::fmin((aabb_min[i] - moving_aabb_max[i]) / velocity[i], t_last);
+      }
+
+      if (velocity[i] > 0.0f) {
+
+         if (moving_aabb_min[i] > aabb_max[i])
+            return false;
+
+         if (moving_aabb_max[i] < aabb_min[i])
+            t_first = std::fmax((aabb_min[i] - moving_aabb_max[i]) / velocity[i], t_first);
+
+         if (aabb_max[i] > moving_aabb_min[i])
+            t_last = std::fmin((aabb_max[i] - moving_aabb_min[i]) / velocity[i], t_last);
+      }
+
+      if (t_first > t_last)
+         return false;
+   }
+
+   return true;
+}
