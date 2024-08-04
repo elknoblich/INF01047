@@ -1,11 +1,13 @@
 #include "../include/collisions.hpp"
 // AABB em coordenadas globais
-AABB::AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id) {
+AABB::AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id, std::string type) {
    glm::vec4 bbox_min_global = model * glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f);
    glm::vec4 bbox_max_global = model * glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f);
    this->bbox_min            = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
    this->bbox_max            = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
    this->id                  = id;
+   this->model               = model;
+   this->type                = type;
 };
 
 AABB::AABB(glm::vec4 center_point, glm::vec4 size, int id) {
@@ -24,6 +26,8 @@ bool AABB::operator<(const AABB &other) const { return id < other.id; };
 
 glm::vec3 AABB::get_min() { return bbox_min; };
 glm::vec3 AABB::get_max() { return bbox_max; };
+glm::mat4 AABB::get_model() const { return model; };
+std::string AABB::get_type() const { return type; };
 
 bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
    glm::vec3 aMin = aabb1.get_min();

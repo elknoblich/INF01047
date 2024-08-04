@@ -30,6 +30,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <list>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>  // Criação de contexto OpenGL 3.3
@@ -341,11 +342,46 @@ int main(int argc, char *argv[]) {
    float speed                 = 2.0f;
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
    glm::vec4 camera_aabb_size  = glm::vec4(0.3f, 0.9f, 0.3f, 1.0f);
+
    std::map<AABB, bool> cam_collision_map;
+   std::list<AABB> static_objects_list;
+
+   int current_sobj_id = 0;
+
+   glm::mat4 model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
+   AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube1] = false;
+   static_objects_list.push_back(aabb_cube1);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
+   AABB aabb_cube2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube2] = false;
+   static_objects_list.push_back(aabb_cube2);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+   AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube3] = false;
+   static_objects_list.push_back(aabb_cube3);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+   AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube4] = false;
+   static_objects_list.push_back(aabb_cube4);
+   ++current_sobj_id;
+
+
+   model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+   AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
+   static_objects_list.push_back(aabb_button);
+   cam_collision_map[aabb_button] = false;
+   ++current_sobj_id;
 
 #define NUM_AABB_OBJ 4
-   float t_first[NUM_AABB_OBJ];
-   float t_last[NUM_AABB_OBJ];
+   float t_first[current_sobj_id];
+   float t_last[current_sobj_id];
 
    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
    while (!glfwWindowShouldClose(window)) {
@@ -421,7 +457,7 @@ int main(int argc, char *argv[]) {
       }
 
       AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                                       // Colisão com objetos
-      SPHERE interaction_sphere(camera_position_c, 0.2f, -1, Matrix_Scale(0.4f, 0.4f, 0.4f) * camera_view_vector); // Interação com objetos
+      SPHERE interaction_sphere(camera_position_c, 0.4f, -1, Matrix_Scale(0.4f, 0.4f, 0.4f) * camera_view_vector); // Interação com objetos
       //SPHERE interaction_sphere(camera_position_c, 1.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
       // Computamos a matriz "View" utilizando os parâmetros da câmera para
       // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -466,84 +502,34 @@ int main(int argc, char *argv[]) {
 #define PLANE  2
 #define CUBE   3
 #define BUTTON 4
-      /*
-      // Desenhamos o modelo da esfera
-      model = Matrix_Translate(-1.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(0.6f) * Matrix_Rotate_X(0.2f) *
-          Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, SPHERE);
-      DrawVirtualObject("the_sphere");
 
-      // Desenhamos o modelo do coelho
-      model = Matrix_Translate(1.0f, 0.0f, 0.0f) * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, BUNNY);
-      DrawVirtualObject("the_bunny");
+      int i = 0;
+      for (const auto &current_aabb: static_objects_list) {
+         glm::mat4 current_model = current_aabb.get_model();
+         std::string type        = current_aabb.get_type();
 
-      // Desenhamos o plano do chão
-      model = Matrix_Translate(0.0f, -1.1f, 0.0f);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, PLANE);
-      DrawVirtualObject("the_plane");
+         if (type == "Cube") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, CUBE);
+            DrawVirtualObject("Cube");
+            cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
 
+         } else if (type == "object_0") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, BUTTON);
+            DrawVirtualObject("object_0");
+            cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+         }
 
-      //
-      model = Matrix_Translate(3.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Rotate_Y(0.0f) * Matrix_Rotate_X(0.0f) *
-          Matrix_Scale(10.0f, 10.0f, 1.0f);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, PLANE);
-      DrawVirtualObject("the_plane");
-      // Imprimimos na tela os ângulos de Euler que controlam a rotação do:w
+         ++i;
+      }
 
-      .*/
-
-
-      model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 0);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(-10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 1);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 2);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 3);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
 
       model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
-      model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
-      AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, 4);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, BUTTON);
-      DrawVirtualObject("object_0");
-      // printf("AABB Min: (%f, %f, %f) Max: (%f, %f, %f)\n", aabb_button.get_min().x, aabb_button.get_min().y, aabb_button.get_min().z,
-      //       aabb_button.get_max().x, aabb_button.get_max().y, aabb_button.get_max().z);
-      //
-      cam_collision_map[aabb_cube1] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube1, velocity, t_first[0], t_last[0]);
-      cam_collision_map[aabb_cube2] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube2, velocity, t_first[1], t_last[1]);
-      cam_collision_map[aabb_cube3] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube3, velocity, t_first[2], t_last[2]);
-      cam_collision_map[aabb_cube4] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube4, velocity, t_first[3], t_last[3]);
-
-      //glm::vec3 min1 = aabb_cube1.get_min();
-      //glm::vec3 max1 = aabb_cube1.get_max();
-      //printf("Cube 1 Min: (%f, %f, %f)\n", min1.x, min1.y, min1.z);
-      //printf("Cube 1 Max: (%f, %f, %f)\n", max1.x, max1.y, max1.z);
       if (!cam_collision_map[aabb_cube4] && !cam_collision_map[aabb_cube1] && !cam_collision_map[aabb_cube2] && !cam_collision_map[aabb_cube3])
          printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
 

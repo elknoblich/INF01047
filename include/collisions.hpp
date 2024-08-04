@@ -4,6 +4,7 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdio>
+#include <string>
 
 class AABB {
 
@@ -11,16 +12,19 @@ class AABB {
    glm::vec3 bbox_min; // Axis-Aligned Bounding Box do objeto
    glm::vec3 bbox_max;
    glm::mat4 model;
+   std::string type;
    int id;
 
 
    public:
-   AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id);
+   AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id, std::string type);
    AABB(glm::vec4 center_point, glm::vec4 size, int id);
 
 
    glm::vec3 get_min();
    glm::vec3 get_max();
+   glm::mat4 get_model() const;
+   std::string get_type() const;
    bool operator<(const AABB &other) const;
 };
 
