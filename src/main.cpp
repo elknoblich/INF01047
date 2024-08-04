@@ -343,6 +343,10 @@ int main(int argc, char *argv[]) {
    glm::vec4 camera_aabb_size  = glm::vec4(0.3f, 0.9f, 0.3f, 1.0f);
    std::map<AABB, bool> cam_collision_map;
 
+#define NUM_AABB_OBJ 4
+   float t_first[NUM_AABB_OBJ];
+   float t_last[NUM_AABB_OBJ];
+
    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
    while (!glfwWindowShouldClose(window)) {
       // Aqui executamos as operações de renderização
@@ -377,6 +381,7 @@ int main(int argc, char *argv[]) {
       glm::vec4 camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);   // Ponto "l", para onde a câmera (look-at) estará sempre olhando
       glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
       glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+      glm::vec4 velocity           = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
       if (g_freeCam) {
          float current_time = (float)glfwGetTime();
 
@@ -390,17 +395,25 @@ int main(int argc, char *argv[]) {
          glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector) / norm(crossproduct(camera_up_vector, w_vector));
          u_vector.y         = 0.0f;
 
-         if (g_W_pressed)
+         if (g_W_pressed) {
             camera_position_c += -w_vector * speed * delta_t;
+            velocity = -w_vector * speed;
+         }
 
-         if (g_A_pressed)
+         if (g_A_pressed) {
             camera_position_c += -u_vector * speed * delta_t;
+            velocity = -u_vector * speed;
+         }
 
-         if (g_D_pressed)
+         if (g_D_pressed) {
             camera_position_c += u_vector * speed * delta_t;
+            velocity = u_vector * speed;
+         }
 
-         if (g_S_pressed)
+         if (g_S_pressed) {
             camera_position_c += w_vector * speed * delta_t;
+            velocity = w_vector * speed;
+         }
 
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
@@ -486,25 +499,25 @@ int main(int argc, char *argv[]) {
 
 
       model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 1);
+      AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 0);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, CUBE);
       DrawVirtualObject("Cube");
 
       model = Matrix_Translate(-10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 2);
+      AABB aabb_cube2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 1);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, CUBE);
       DrawVirtualObject("Cube");
 
       model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 3);
+      AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 2);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, CUBE);
       DrawVirtualObject("Cube");
 
       model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 4);
+      AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 3);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, CUBE);
       DrawVirtualObject("Cube");
@@ -515,37 +528,39 @@ int main(int argc, char *argv[]) {
       DrawVirtualObject("the_plane");
 
       model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
-      AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, 5);
+      AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, 4);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, BUTTON);
       DrawVirtualObject("object_0");
       // printf("AABB Min: (%f, %f, %f) Max: (%f, %f, %f)\n", aabb_button.get_min().x, aabb_button.get_min().y, aabb_button.get_min().z,
       //       aabb_button.get_max().x, aabb_button.get_max().y, aabb_button.get_max().z);
-      cam_collision_map[aabb_cube1] = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
-      cam_collision_map[aabb_cube2] = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);
-      cam_collision_map[aabb_cube3] = AABB_to_AABB_intersec(cam_aabb, aabb_cube3);
-      cam_collision_map[aabb_cube4] = AABB_to_AABB_intersec(cam_aabb, aabb_cube4);
+      //
+      cam_collision_map[aabb_cube1] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube1, velocity, t_first[0], t_last[0]);
+      cam_collision_map[aabb_cube2] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube2, velocity, t_first[1], t_last[1]);
+      cam_collision_map[aabb_cube3] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube3, velocity, t_first[2], t_last[2]);
+      cam_collision_map[aabb_cube4] = moving_AABB_to_AABB_intersec(cam_aabb, aabb_cube4, velocity, t_first[3], t_last[3]);
 
       //glm::vec3 min1 = aabb_cube1.get_min();
       //glm::vec3 max1 = aabb_cube1.get_max();
       //printf("Cube 1 Min: (%f, %f, %f)\n", min1.x, min1.y, min1.z);
       //printf("Cube 1 Max: (%f, %f, %f)\n", max1.x, max1.y, max1.z);
-      //
+      if (!cam_collision_map[aabb_cube4] && !cam_collision_map[aabb_cube1] && !cam_collision_map[aabb_cube2] && !cam_collision_map[aabb_cube3])
+         printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
 
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed)
-         printf("Button Pressed\n");
+         printf("Button Presseddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
 
       if (cam_collision_map[aabb_cube1])
-         printf("Colision cube 1\n");
+         printf("Colision cube 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n");
 
       if (cam_collision_map[aabb_cube2])
-         printf("Colision cube 2\n");
+         printf("Colision cube 222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222\n");
 
       if (cam_collision_map[aabb_cube3])
-         printf("Colision cube 3\n");
+         printf("Colision cube 333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\n");
 
       if (cam_collision_map[aabb_cube4])
-         printf("Colision cube 4\n");
+         printf("Colision cube 44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n");
 
       TextRendering_ShowEulerAngles(window);
 

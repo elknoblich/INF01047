@@ -3,21 +3,21 @@
 AABB::AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id) {
    glm::vec4 bbox_min_global = model * glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f);
    glm::vec4 bbox_max_global = model * glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f);
-   bbox_min                  = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
-   bbox_max                  = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
+   this->bbox_min            = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
+   this->bbox_max            = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
    this->id                  = id;
 };
 
 AABB::AABB(glm::vec4 center_point, glm::vec4 size, int id) {
-   glm::vec4 p1 = center_point + size;
-   glm::vec4 p2 = center_point - size;
-   bbox_min.x   = std::fmin(p1.x, p2.x);
-   bbox_min.y   = std::fmin(p1.y, p2.y);
-   bbox_min.z   = std::fmin(p1.z, p2.z);
-   bbox_max.x   = std::fmax(p1.x, p2.x);
-   bbox_max.y   = std::fmax(p1.y, p2.y);
-   bbox_max.z   = std::fmax(p1.z, p2.z);
-   this->id     = id;
+   glm::vec4 p1     = center_point + size;
+   glm::vec4 p2     = center_point - size;
+   this->bbox_min.x = std::fmin(p1.x, p2.x);
+   this->bbox_min.y = std::fmin(p1.y, p2.y);
+   this->bbox_min.z = std::fmin(p1.z, p2.z);
+   this->bbox_max.x = std::fmax(p1.x, p2.x);
+   this->bbox_max.y = std::fmax(p1.y, p2.y);
+   this->bbox_max.z = std::fmax(p1.z, p2.z);
+   this->id         = id;
 };
 
 bool AABB::operator<(const AABB &other) const { return id < other.id; };
@@ -61,10 +61,11 @@ bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb) {
    return dist_sq < radius_sq;
 }
 
-bool moving_AABB_to_AABB(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float &t_first, float &t_last) {
+bool moving_AABB_to_AABB_intersec(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float &t_first, float &t_last) {
 
    if (AABB_to_AABB_intersec(moving_aabb, aabb)) {
-      t_first = t_last = 0.0f;
+      t_first = 0.0f;
+      t_last  = 0.0f;
       return true;
    }
 
@@ -101,6 +102,10 @@ bool moving_AABB_to_AABB(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float 
          if (aabb_max[i] > moving_aabb_min[i])
             t_last = std::fmin((aabb_max[i] - moving_aabb_min[i]) / velocity[i], t_last);
       }
+
+      if (velocity[i] == 0.0f)
+         if (moving_aabb_max[i] < aabb_min[i] || moving_aabb_min[i] > aabb_max[i])
+            return false;
 
       if (t_first > t_last)
          return false;
