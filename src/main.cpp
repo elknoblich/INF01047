@@ -406,7 +406,10 @@ int main(int argc, char *argv[]) {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
       }
-      AABB cam_aabb(camera_position_c, camera_aabb_size, 0);
+
+      AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                                       // Colisão com objetos
+      SPHERE interaction_sphere(camera_position_c, 0.2f, -1, Matrix_Scale(0.4f, 0.4f, 0.4f) * camera_view_vector); // Interação com objetos
+      //SPHERE interaction_sphere(camera_position_c, 1.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
       // Computamos a matriz "View" utilizando os parâmetros da câmera para
       // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
@@ -511,11 +514,13 @@ int main(int argc, char *argv[]) {
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
-      model = Matrix_Translate(-10.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+      model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+      AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, 5);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, BUTTON);
       DrawVirtualObject("object_0");
-
+      // printf("AABB Min: (%f, %f, %f) Max: (%f, %f, %f)\n", aabb_button.get_min().x, aabb_button.get_min().y, aabb_button.get_min().z,
+      //       aabb_button.get_max().x, aabb_button.get_max().y, aabb_button.get_max().z);
       cam_collision_map[aabb_cube1] = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
       cam_collision_map[aabb_cube2] = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);
       cam_collision_map[aabb_cube3] = AABB_to_AABB_intersec(cam_aabb, aabb_cube3);
@@ -525,6 +530,10 @@ int main(int argc, char *argv[]) {
       //glm::vec3 max1 = aabb_cube1.get_max();
       //printf("Cube 1 Min: (%f, %f, %f)\n", min1.x, min1.y, min1.z);
       //printf("Cube 1 Max: (%f, %f, %f)\n", max1.x, max1.y, max1.z);
+      //
+
+      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed)
+         printf("Button Pressed\n");
 
       if (cam_collision_map[aabb_cube1])
          printf("Colision cube 1\n");
