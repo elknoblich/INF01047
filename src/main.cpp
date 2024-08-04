@@ -342,7 +342,8 @@ int main(int argc, char *argv[]) {
    float speed                 = 2.0f;
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
    glm::vec4 camera_aabb_size  = glm::vec4(0.3f, 0.9f, 0.3f, 1.0f);
-
+   AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                     // Colisão com objetos
+   SPHERE interaction_sphere(camera_position_c, 0.4f, -1, glm::vec4(0.5f, 0.5f, 0.5f, 0.0f)); // Interação com objetos
    std::map<AABB, bool> cam_collision_map;
    std::list<AABB> static_objects_list;
 
@@ -455,9 +456,8 @@ int main(int argc, char *argv[]) {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
       }
-
-      AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                                       // Colisão com objetos
-      SPHERE interaction_sphere(camera_position_c, 0.4f, -1, Matrix_Scale(0.4f, 0.4f, 0.4f) * camera_view_vector); // Interação com objetos
+      cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
+      interaction_sphere.update_sphere(camera_position_c, camera_view_vector);
       //SPHERE interaction_sphere(camera_position_c, 1.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
       // Computamos a matriz "View" utilizando os parâmetros da câmera para
       // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.

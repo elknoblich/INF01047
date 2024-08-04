@@ -20,7 +20,7 @@ class AABB {
    AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id, std::string type);
    AABB(glm::vec4 center_point, glm::vec4 size, int id);
 
-
+   void update_aabb(glm::vec4 center_position, glm::vec4 size);
    glm::vec3 get_min();
    glm::vec3 get_max();
    glm::mat4 get_model() const;
@@ -38,6 +38,7 @@ class SPHERE {
 
    public:
    SPHERE(glm::vec4 position, float radius, int id, glm::vec4 translation_vec);
+   void update_sphere(glm::vec4 position, glm::vec4 translation_vec);
    glm::vec4 get_center();
    float get_radius();
    //  SPHERE(AABB aabb, int id);

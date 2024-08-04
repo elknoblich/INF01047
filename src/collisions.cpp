@@ -28,6 +28,16 @@ glm::vec3 AABB::get_min() { return bbox_min; };
 glm::vec3 AABB::get_max() { return bbox_max; };
 glm::mat4 AABB::get_model() const { return model; };
 std::string AABB::get_type() const { return type; };
+void AABB::update_aabb(glm::vec4 center_point, glm::vec4 size) {
+   glm::vec4 p1     = center_point + size;
+   glm::vec4 p2     = center_point - size;
+   this->bbox_min.x = std::fmin(p1.x, p2.x);
+   this->bbox_min.y = std::fmin(p1.y, p2.y);
+   this->bbox_min.z = std::fmin(p1.z, p2.z);
+   this->bbox_max.x = std::fmax(p1.x, p2.x);
+   this->bbox_max.y = std::fmax(p1.y, p2.y);
+   this->bbox_max.z = std::fmax(p1.z, p2.z);
+};
 
 bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
    glm::vec3 aMin = aabb1.get_min();
@@ -43,6 +53,11 @@ SPHERE::SPHERE(glm::vec4 position, float radius, int id, glm::vec4 translation_v
    this->position.w = 1.0f;
    this->radius     = radius;
    this->id         = id;
+}
+
+void SPHERE::update_sphere(glm::vec4 position, glm::vec4 translation_vec) {
+   this->position   = position + translation_vec;
+   this->position.w = 1.0f;
 }
 glm::vec4 SPHERE::get_center() { return position; }
 
