@@ -1,6 +1,7 @@
 // INF01047: Trabalho Final
 // Erick Larratéa Knolibhc 00324422
-// Nicolas André Nunes da Silva 00279050 
+// Nicolas André Nunes da Silva 00279050
+// Branch elknoblich
 
 #include <cmath>
 #include <cstdio>
