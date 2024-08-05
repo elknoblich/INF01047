@@ -1,6 +1,6 @@
 // INF01047: Trabalho Final
 // Erick Larratéa Knolibhc 00324422
-// Nicolas André Nunes da Silva 00279050 
+// Nicolas André Nunes da Silva 00279050
 
 #include <cmath>
 #include <cstdio>
@@ -15,10 +15,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
-<<<<<<< HEAD
-#include <glad/glad.h>  
-#include <GLFW/glfw3.h> 
-=======
 #include <list>
 
 // Headers das bibliotecas OpenGL
@@ -26,7 +22,6 @@
 #include <GLFW/glfw3.h> // Criação de janelas do sistema operacional
 
 // Headers da biblioteca GLM: criação de matrizes e vetores.
->>>>>>> test_nan
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -84,16 +79,16 @@ struct ObjModel {
 void PushMatrix(glm::mat4 M);
 void PopMatrix(glm::mat4 &M);
 
-void BuildTrianglesAndAddToVirtualScene(ObjModel *);     
-void ComputeNormals(ObjModel *model);                    
-void LoadShadersFromFiles();                             
-void LoadTextureImage(const char *filename);             
-void DrawVirtualObject(const char *object_name);         
-GLuint LoadShader_Vertex(const char *filename);          
-GLuint LoadShader_Fragment(const char *filename);        
-void LoadShader(const char *filename, GLuint shader_id); 
-GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id); 
-void PrintObjModelInfo(ObjModel *);                                          
+void BuildTrianglesAndAddToVirtualScene(ObjModel *);
+void ComputeNormals(ObjModel *model);
+void LoadShadersFromFiles();
+void LoadTextureImage(const char *filename);
+void DrawVirtualObject(const char *object_name);
+GLuint LoadShader_Vertex(const char *filename);
+GLuint LoadShader_Fragment(const char *filename);
+void LoadShader(const char *filename, GLuint shader_id);
+GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id);
+void PrintObjModelInfo(ObjModel *);
 
 void TextRendering_Init();
 float TextRendering_LineHeight(GLFWwindow *window);
@@ -118,12 +113,12 @@ void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 struct SceneObject {
-   std::string name;              
-   size_t first_index;            
-   size_t num_indices;            
-   GLenum rendering_mode;         
-   GLuint vertex_array_object_id; 
-   glm::vec3 bbox_min;            
+   std::string name;
+   size_t first_index;
+   size_t num_indices;
+   GLenum rendering_mode;
+   GLuint vertex_array_object_id;
+   glm::vec3 bbox_min;
    glm::vec3 bbox_max;
 };
 
@@ -138,17 +133,17 @@ float g_AngleY = 0.0f;
 float g_AngleZ = 0.0f;
 
 bool g_LeftMouseButtonPressed   = false;
-bool g_RightMouseButtonPressed  = false; 
-bool g_MiddleMouseButtonPressed = false; 
+bool g_RightMouseButtonPressed  = false;
+bool g_MiddleMouseButtonPressed = false;
 bool g_W_pressed                = false;
 bool g_A_pressed                = false;
 bool g_D_pressed                = false;
 bool g_S_pressed                = false;
 bool g_freeCam                  = true;
 
-float g_CameraTheta    = 0.0f; 
-float g_CameraPhi      = 0.0f; 
-float g_CameraDistance = 3.5f; 
+float g_CameraTheta    = 0.0f;
+float g_CameraPhi      = 0.0f;
+float g_CameraDistance = 3.5f;
 
 float g_ForearmAngleZ = 0.0f;
 float g_ForearmAngleX = 0.0f;
@@ -211,7 +206,7 @@ int main(int argc, char *argv[]) {
    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
-   FramebufferSizeCallback(window, 800, 600); 
+   FramebufferSizeCallback(window, 800, 600);
 
    const GLubyte *vendor      = glGetString(GL_VENDOR);
    const GLubyte *renderer    = glGetString(GL_RENDERER);
@@ -222,8 +217,8 @@ int main(int argc, char *argv[]) {
 
    LoadShadersFromFiles();
 
-   LoadTextureImage("../../data/floor_tiles_04_diff_4k.jpg");       
-   LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); 
+   LoadTextureImage("../../data/floor_tiles_04_diff_4k.jpg");
+   LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif");
 
    ObjModel spheremodel("../../data/sphere.obj");
    ComputeNormals(&spheremodel);
@@ -317,22 +312,16 @@ int main(int argc, char *argv[]) {
       float z = r * cos(g_CameraPhi) * cos(g_CameraTheta);
       float x = r * cos(g_CameraPhi) * sin(g_CameraTheta);
 
-<<<<<<< HEAD
-      glm::vec4 camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);   
-      glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; 
-      glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   
-=======
       // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
       // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
       glm::vec4 camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);   // Ponto "l", para onde a câmera (look-at) estará sempre olhando
       glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
       glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   // Vetor "up" fixado para apontar para o "céu" (eito Y global)
       glm::vec4 velocity           = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
->>>>>>> test_nan
       if (g_freeCam) {
          float current_time = (float)glfwGetTime();
 
-         camera_view_vector = glm::vec4(x, -y, z, 0.0f); 
+         camera_view_vector = glm::vec4(x, -y, z, 0.0f);
 
          float delta_t = current_time - prev_time;
          prev_time     = current_time;
@@ -397,23 +386,17 @@ int main(int argc, char *argv[]) {
 
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
-         camera_view_vector = camera_lookat_l - camera_position_c; 
+         camera_view_vector = camera_lookat_l - camera_position_c;
       }
-
-<<<<<<< HEAD
-      AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                                       
-      SPHERE interaction_sphere(camera_position_c, 0.2f, -1, Matrix_Scale(0.4f, 0.4f, 0.4f) * camera_view_vector); 
-=======
       cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
       interaction_sphere.update_sphere(camera_position_c, camera_view_vector);
->>>>>>> test_nan
 
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
 
       glm::mat4 projection;
 
-      float nearplane = -0.1f;  
-      float farplane  = -40.0f; 
+      float nearplane = -0.1f;
+      float farplane  = -40.0f;
 
       if (g_UsePerspectiveProjection) {
 
@@ -428,7 +411,7 @@ int main(int argc, char *argv[]) {
          projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
       }
 
-      glm::mat4 model = Matrix_Identity(); 
+      glm::mat4 model = Matrix_Identity();
 
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
@@ -439,31 +422,6 @@ int main(int argc, char *argv[]) {
 #define CUBE   3
 #define BUTTON 4
 
-<<<<<<< HEAD
-      model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 1);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(-10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
-      AABB aabb_cube2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 2);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 3);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-
-      model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-      AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, 4);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, CUBE);
-      DrawVirtualObject("Cube");
-=======
       int i = 0;
       for (const auto &current_aabb: static_objects_list) {
          glm::mat4 current_model = current_aabb.get_model();
@@ -485,28 +443,14 @@ int main(int argc, char *argv[]) {
          ++i;
       }
 
->>>>>>> test_nan
 
       model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
-<<<<<<< HEAD
-      model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
-      AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, 5);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, BUTTON);
-      DrawVirtualObject("object_0");
-
-      cam_collision_map[aabb_cube1] = AABB_to_AABB_intersec(cam_aabb, aabb_cube1);
-      cam_collision_map[aabb_cube2] = AABB_to_AABB_intersec(cam_aabb, aabb_cube2);
-      cam_collision_map[aabb_cube3] = AABB_to_AABB_intersec(cam_aabb, aabb_cube3);
-      cam_collision_map[aabb_cube4] = AABB_to_AABB_intersec(cam_aabb, aabb_cube4);
-=======
       if (!cam_collision_map[aabb_cube4] && !cam_collision_map[aabb_cube1] && !cam_collision_map[aabb_cube2] && !cam_collision_map[aabb_cube3])
          printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
->>>>>>> test_nan
 
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed)
          printf("Button Presseddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
@@ -608,10 +552,10 @@ void LoadShadersFromFiles() {
 
    g_GpuProgramID = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
 
-   g_model_uniform      = glGetUniformLocation(g_GpuProgramID, "model");      
-   g_view_uniform       = glGetUniformLocation(g_GpuProgramID, "view");       
-   g_projection_uniform = glGetUniformLocation(g_GpuProgramID, "projection"); 
-   g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id");  
+   g_model_uniform      = glGetUniformLocation(g_GpuProgramID, "model");
+   g_view_uniform       = glGetUniformLocation(g_GpuProgramID, "view");
+   g_projection_uniform = glGetUniformLocation(g_GpuProgramID, "projection");
+   g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id");
    g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
    g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
 
@@ -715,10 +659,10 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
             const float vy = model->attrib.vertices[3 * idx.vertex_index + 1];
             const float vz = model->attrib.vertices[3 * idx.vertex_index + 2];
 
-            model_coefficients.push_back(vx);   
-            model_coefficients.push_back(vy);   
-            model_coefficients.push_back(vz);   
-            model_coefficients.push_back(1.0f); 
+            model_coefficients.push_back(vx);
+            model_coefficients.push_back(vy);
+            model_coefficients.push_back(vz);
+            model_coefficients.push_back(1.0f);
 
             bbox_min.x = std::min(bbox_min.x, vx);
             bbox_min.y = std::min(bbox_min.y, vy);
@@ -731,10 +675,10 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
                const float nx = model->attrib.normals[3 * idx.normal_index + 0];
                const float ny = model->attrib.normals[3 * idx.normal_index + 1];
                const float nz = model->attrib.normals[3 * idx.normal_index + 2];
-               normal_coefficients.push_back(nx);   
-               normal_coefficients.push_back(ny);   
-               normal_coefficients.push_back(nz);   
-               normal_coefficients.push_back(0.0f); 
+               normal_coefficients.push_back(nx);
+               normal_coefficients.push_back(ny);
+               normal_coefficients.push_back(nz);
+               normal_coefficients.push_back(0.0f);
             }
 
             if (idx.texcoord_index != -1) {
@@ -750,9 +694,9 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
 
       SceneObject theobject;
       theobject.name                   = model->shapes[shape].name;
-      theobject.first_index            = first_index;                  
-      theobject.num_indices            = last_index - first_index + 1; 
-      theobject.rendering_mode         = GL_TRIANGLES;                 
+      theobject.first_index            = first_index;
+      theobject.num_indices            = last_index - first_index + 1;
+      theobject.rendering_mode         = GL_TRIANGLES;
       theobject.vertex_array_object_id = vertex_array_object_id;
 
       theobject.bbox_min = bbox_min;
@@ -766,8 +710,8 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
    glBufferData(GL_ARRAY_BUFFER, model_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
    glBufferSubData(GL_ARRAY_BUFFER, 0, model_coefficients.size() * sizeof(float), model_coefficients.data());
-   GLuint location            = 0; 
-   GLint number_of_dimensions = 4; 
+   GLuint location            = 0;
+   GLint number_of_dimensions = 4;
    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
    glEnableVertexAttribArray(location);
    glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -778,8 +722,8 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
       glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
       glBufferData(GL_ARRAY_BUFFER, normal_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
       glBufferSubData(GL_ARRAY_BUFFER, 0, normal_coefficients.size() * sizeof(float), normal_coefficients.data());
-      location             = 1; 
-      number_of_dimensions = 4; 
+      location             = 1;
+      number_of_dimensions = 4;
       glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
       glEnableVertexAttribArray(location);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -791,8 +735,8 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel *model) {
       glBindBuffer(GL_ARRAY_BUFFER, VBO_texture_coefficients_id);
       glBufferData(GL_ARRAY_BUFFER, texture_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
       glBufferSubData(GL_ARRAY_BUFFER, 0, texture_coefficients.size() * sizeof(float), texture_coefficients.data());
-      location             = 2; 
-      number_of_dimensions = 2; 
+      location             = 2;
+      number_of_dimensions = 2;
       glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
       glEnableVertexAttribArray(location);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1040,7 +984,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GL_TRUE);
 
-   float delta = 3.141592 / 16; 
+   float delta = 3.141592 / 16;
 
    if (key == GLFW_KEY_X && action == GLFW_PRESS) {
       g_AngleX += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
