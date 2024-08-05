@@ -339,9 +339,9 @@ int main(int argc, char *argv[]) {
    glFrontFace(GL_CCW);
 
    float prev_time             = (float)glfwGetTime();
-   float speed                 = 2.0f;
+   float speed                 = 0.5f;
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
-   glm::vec4 camera_aabb_size  = glm::vec4(0.3f, 0.9f, 0.3f, 1.0f);
+   glm::vec4 camera_aabb_size  = glm::vec4(0.8f, 0.9f, 0.8f, 0.0f);
    AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                     // Colisão com objetos
    SPHERE interaction_sphere(camera_position_c, 0.4f, -1, glm::vec4(0.5f, 0.5f, 0.5f, 0.0f)); // Interação com objetos
    std::map<AABB, bool> cam_collision_map;
@@ -450,19 +450,46 @@ int main(int argc, char *argv[]) {
          if (g_S_pressed) {
             velocity += w_vector;
          }
-         camera_position_c += velocity * speed * delta_t;
+
+         if (velocity.x != 0 && velocity.z != 0) {
+            velocity = velocity / norm(velocity);
+         }
+
+         int count = 0;
+         for (const auto &current_aabb: static_objects_list) {
+            if (cam_collision_map[current_aabb]) {
+
+               glm::vec4 collision_normal = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+               for (int i: {0, 2}) {
+
+                  if (velocity[i] > 0.0f && camera_position_c[i] + cam_aabb.get_max()[i] > current_aabb.get_min()[i]) {
+                     collision_normal[i] = -1.0f;
+
+                  } else if (velocity[i] < 0.0f && camera_position_c[i] + cam_aabb.get_min()[i] < current_aabb.get_max()[i]) {
+
+                     collision_normal[i] = 1.0f;
+                  }
+               }
+               velocity = velocity - *collision_normal * dotproduct(velocity, collision_normal);
+               camera_position_c += velocity * speed * delta_t;
+            } else {
+
+               camera_position_c += velocity * speed * delta_t;
+            }
+
+            ++count;
+         }
+
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
       }
+
       cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
       interaction_sphere.update_sphere(camera_position_c, camera_view_vector);
-      //SPHERE interaction_sphere(camera_position_c, 1.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
-      // Computamos a matriz "View" utilizando os parâmetros da câmera para
-      // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
+
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
 
-      // Agora computamos a matriz de Projeção.
       glm::mat4 projection;
 
       // Note que, no sistema de coordenadas da câmera, os planos near e far

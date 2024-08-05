@@ -24,8 +24,8 @@ AABB::AABB(glm::vec4 center_point, glm::vec4 size, int id) {
 
 bool AABB::operator<(const AABB &other) const { return id < other.id; };
 
-glm::vec3 AABB::get_min() { return bbox_min; };
-glm::vec3 AABB::get_max() { return bbox_max; };
+glm::vec3 AABB::get_min() const { return bbox_min; };
+glm::vec3 AABB::get_max() const { return bbox_max; };
 glm::mat4 AABB::get_model() const { return model; };
 std::string AABB::get_type() const { return type; };
 void AABB::update_aabb(glm::vec4 center_point, glm::vec4 size) {
