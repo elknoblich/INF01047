@@ -432,26 +432,25 @@ int main(int argc, char *argv[]) {
          glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector) / norm(crossproduct(camera_up_vector, w_vector));
          u_vector.y         = 0.0f;
 
+         w_vector = w_vector / norm(w_vector);
+         u_vector = u_vector / norm(u_vector);
+
          if (g_W_pressed) {
-            camera_position_c += -w_vector * speed * delta_t;
-            velocity = -w_vector * speed;
+            velocity += -w_vector;
          }
 
          if (g_A_pressed) {
-            camera_position_c += -u_vector * speed * delta_t;
-            velocity = -u_vector * speed;
+            velocity += -u_vector;
          }
 
          if (g_D_pressed) {
-            camera_position_c += u_vector * speed * delta_t;
-            velocity = u_vector * speed;
+            velocity += u_vector;
          }
 
          if (g_S_pressed) {
-            camera_position_c += w_vector * speed * delta_t;
-            velocity = w_vector * speed;
+            velocity += w_vector;
          }
-
+         camera_position_c += velocity * speed * delta_t;
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
