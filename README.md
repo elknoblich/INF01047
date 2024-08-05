@@ -6,7 +6,7 @@
 - [x] Câmera livre
 - [ ] Câmera look-at
 - [x] Instâncias de objetos
-- [ ] Três tipos de testes de intersecção (falta um provavelmente será raio/AABB)
+- [x] Três tipos de testes de intersecção 
 - [ ] Modelo de Iluminação Difusa 
 - [ ] Modelo de Iluminação Blinn-Phong
 - [ ] Modelos de Interpolação de Phong e Gouraud
