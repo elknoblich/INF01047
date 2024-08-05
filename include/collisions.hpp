@@ -1,11 +1,12 @@
 #ifndef COLLISIONS_H
 #define COLLISIONS_H
+#include "glm/ext/vector_float4.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdio>
 #include <string>
-
+#include <float.h>
 class AABB {
 
    private:
@@ -47,5 +48,6 @@ class SPHERE {
 
 bool Sphere_to_AABB_intersec(SPHERE sphere, AABB aabb);
 bool moving_AABB_to_AABB_intersec(AABB moving_aabb, AABB aabb, glm::vec4 velocity, float &t_first, float &t_last);
+bool ray_to_AABB_intersec(glm::vec4 point, glm::vec4 vector, AABB aabb, float &tmin, glm::vec4 &intersec_point);
 
 #endif

@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
    glm::vec4 camera_position_c = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
    glm::vec4 camera_aabb_size  = glm::vec4(0.8f, 0.9f, 0.8f, 0.0f);
    AABB cam_aabb(camera_position_c, camera_aabb_size, 0);                                     // Colisão com objetos
-   SPHERE interaction_sphere(camera_position_c, 0.4f, -1, glm::vec4(0.5f, 0.5f, 0.5f, 0.0f)); // Interação com objetos
+   SPHERE interaction_sphere(camera_position_c, 2.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
    std::map<AABB, bool> cam_collision_map;
    std::list<AABB> static_objects_list;
 
@@ -299,6 +299,10 @@ int main(int argc, char *argv[]) {
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 
+   glm::vec4 camera_lookat_l = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+   //glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
+   glm::vec4 camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
+   glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
    while (!glfwWindowShouldClose(window)) {
 
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -314,10 +318,7 @@ int main(int argc, char *argv[]) {
 
       // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
       // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-      glm::vec4 camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);   // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-      glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-      glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   // Vetor "up" fixado para apontar para o "céu" (eito Y global)
-      glm::vec4 velocity           = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+      glm::vec4 velocity = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
       if (g_freeCam) {
          float current_time = (float)glfwGetTime();
 
@@ -389,7 +390,7 @@ int main(int argc, char *argv[]) {
          camera_view_vector = camera_lookat_l - camera_position_c;
       }
       cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
-      interaction_sphere.update_sphere(camera_position_c, camera_view_vector);
+      interaction_sphere.update_sphere(camera_position_c, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
 
@@ -452,7 +453,12 @@ int main(int argc, char *argv[]) {
       if (!cam_collision_map[aabb_cube4] && !cam_collision_map[aabb_cube1] && !cam_collision_map[aabb_cube2] && !cam_collision_map[aabb_cube3])
          printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
 
-      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed)
+      float tmin;
+      glm::vec4 intersec_point;
+      bool button_ray_intersec =
+          ray_to_AABB_intersec(camera_position_c, camera_view_vector / norm(camera_view_vector), aabb_button, tmin, intersec_point);
+
+      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed && button_ray_intersec)
          printf("Button Presseddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
 
       if (cam_collision_map[aabb_cube1])

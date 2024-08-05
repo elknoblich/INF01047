@@ -1,4 +1,10 @@
 #include "../include/collisions.hpp"
+/*
+ * Referencias:
+ * Real-Time Collision Detection, Christer Ericson
+ * Game Physics Cookbook, Gabor Szauer
+ * Real-Time Rendering
+ * */
 // AABB em coordenadas globais
 AABB::AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, int id, std::string type) {
    glm::vec4 bbox_min_global = model * glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f);
@@ -128,6 +134,42 @@ bool moving_AABB_to_AABB_intersec(AABB moving_aabb, AABB aabb, glm::vec4 velocit
 
       if (t_first > t_last)
          return false;
+   }
+
+   return true;
+}
+
+bool ray_to_AABB_intersec(glm::vec4 point, glm::vec4 vector, AABB aabb, float &tmin, glm::vec4 &intersec_point) {
+   tmin       = 0.0f;
+   float tmax = FLT_MAX;
+
+   for (int i = 0; i < 3; i++) {
+
+
+      float origin   = point[i];
+      float dir      = vector[i];
+      float aabb_min = aabb.get_min()[i];
+      float aabb_max = aabb.get_max()[i];
+
+      if (std::fabs(vector[i]) < 0.001) {
+
+         if (origin < aabb_min || origin > aabb_max)
+            return false;
+
+      } else {
+         float ood = 1.0f / dir;
+         float t1  = (aabb_min - origin) * ood;
+         float t2  = (aabb_max - origin) * ood;
+
+         if (t1 > t2)
+            std::swap(t1, t2);
+
+         tmin = std::max(tmin, t1);
+         tmax = std::min(tmax, t2);
+
+         if (tmin > tmax)
+            return false;
+      }
    }
 
    return true;
