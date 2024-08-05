@@ -451,13 +451,15 @@ int main(int argc, char *argv[]) {
             velocity += w_vector;
          }
 
-         if (velocity.x != 0 && velocity.z != 0) {
+         if (velocity.x != 0 || velocity.z != 0) {
             velocity = velocity / norm(velocity);
          }
 
          int count = 0;
          for (const auto &current_aabb: static_objects_list) {
             if (cam_collision_map[current_aabb]) {
+
+               camera_position_c += velocity * t_first[count] * delta_t;
 
                glm::vec4 collision_normal = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
                for (int i: {0, 2}) {
@@ -470,8 +472,11 @@ int main(int argc, char *argv[]) {
                      collision_normal[i] = 1.0f;
                   }
                }
-               velocity = velocity - *collision_normal * dotproduct(velocity, collision_normal);
-               camera_position_c += velocity * speed * delta_t;
+
+               velocity = velocity - 2.0f * collision_normal * dotproduct(velocity, collision_normal);
+               camera_position_c += collision_normal * (1.0f - t_first[count]) * delta_t;
+               camera_position_c += velocity * (1.0f - t_first[count]) * delta_t;
+
             } else {
 
                camera_position_c += velocity * speed * delta_t;
