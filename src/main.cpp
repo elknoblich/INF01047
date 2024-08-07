@@ -135,6 +135,7 @@ float g_AngleZ = 0.0f;
 bool g_LeftMouseButtonPressed   = false;
 bool g_RightMouseButtonPressed  = false;
 bool g_MiddleMouseButtonPressed = false;
+bool g_LeftMouseButtonClicked   = false;
 bool g_W_pressed                = false;
 bool g_A_pressed                = false;
 bool g_D_pressed                = false;
@@ -240,6 +241,9 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&buttonmodel);
    BuildTrianglesAndAddToVirtualScene(&buttonmodel);
 
+   ObjModel sharkmodel("../../data/shark.obj");
+   ComputeNormals(&sharkmodel);
+   BuildTrianglesAndAddToVirtualScene(&sharkmodel);
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -264,7 +268,9 @@ int main(int argc, char *argv[]) {
 
    int current_sobj_id = 0;
 
-   glm::mat4 model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
+   glm::mat4 model = Matrix_Identity();
+
+   model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
    AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
    cam_collision_map[aabb_cube1] = false;
    static_objects_list.push_back(aabb_cube1);
@@ -293,7 +299,20 @@ int main(int argc, char *argv[]) {
    AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
    static_objects_list.push_back(aabb_button);
    cam_collision_map[aabb_button] = false;
+
+   model = Matrix_Translate(-8.0f, 0.7f, 2.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+   AABB aabb_button2(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
+   static_objects_list.push_back(aabb_button2);
+   cam_collision_map[aabb_button2] = false;
    ++current_sobj_id;
+
+   model = Matrix_Translate(-8.0f, 0.7f, -2.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
+   AABB aabb_button3(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
+   static_objects_list.push_back(aabb_button3);
+   cam_collision_map[aabb_button3] = false;
+   ++current_sobj_id;
+
+   bool show_shark = false;
 
 #define NUM_AABB_OBJ 4
    float t_first[current_sobj_id];
@@ -304,6 +323,8 @@ int main(int argc, char *argv[]) {
    glm::vec4 camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
    glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
    while (!glfwWindowShouldClose(window)) {
+
+      g_LeftMouseButtonClicked = false;
 
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -377,6 +398,7 @@ int main(int argc, char *argv[]) {
                camera_position_c += collision_normal * (1.0f - t_first[count]) * delta_t;
                camera_position_c += velocity * (1.0f - t_first[count]) * delta_t;
 
+
             } else {
 
                camera_position_c += velocity * speed * delta_t;
@@ -422,11 +444,14 @@ int main(int argc, char *argv[]) {
 #define PLANE  2
 #define CUBE   3
 #define BUTTON 4
+#define SHARK  5
 
       int i = 0;
+
       for (const auto &current_aabb: static_objects_list) {
          glm::mat4 current_model = current_aabb.get_model();
          std::string type        = current_aabb.get_type();
+
 
          if (type == "Cube") {
             glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
@@ -450,28 +475,21 @@ int main(int argc, char *argv[]) {
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
 
-      if (!cam_collision_map[aabb_cube4] && !cam_collision_map[aabb_cube1] && !cam_collision_map[aabb_cube2] && !cam_collision_map[aabb_cube3])
-         printf("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
 
       float tmin;
       glm::vec4 intersec_point;
       bool button_ray_intersec =
           ray_to_AABB_intersec(camera_position_c, camera_view_vector / norm(camera_view_vector), aabb_button, tmin, intersec_point);
 
-      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && g_LeftMouseButtonPressed && button_ray_intersec)
-         printf("Button Presseddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
-
-      if (cam_collision_map[aabb_cube1])
-         printf("Colision cube 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n");
-
-      if (cam_collision_map[aabb_cube2])
-         printf("Colision cube 222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222\n");
-
-      if (cam_collision_map[aabb_cube3])
-         printf("Colision cube 333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\n");
-
-      if (cam_collision_map[aabb_cube4])
-         printf("Colision cube 44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n");
+      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
+         show_shark = !show_shark;
+      }
+      if (show_shark) {
+         model = Matrix_Translate(-12.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0) * Matrix_Scale(2.0f, 2.0f, 2.0f);
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+         glUniform1i(g_object_id_uniform, SHARK);
+         DrawVirtualObject("Object_TexMap_0");
+      }
 
       TextRendering_ShowEulerAngles(window);
 
@@ -882,10 +900,12 @@ void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
 
       glfwGetCursorPos(window, &g_LastCursorPosX, &g_LastCursorPosY);
       g_LeftMouseButtonPressed = true;
+      g_LeftMouseButtonClicked = true;
    }
    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 
       g_LeftMouseButtonPressed = false;
+      g_LeftMouseButtonClicked = false;
    }
    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 
