@@ -69,7 +69,7 @@ void main()
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
     vec4 r = normalize(-l + 2*n*(dot(n,l)));
-
+    vec4 h = normalize(v+l);
     // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
@@ -128,7 +128,7 @@ void main()
     vec3 ambient_term = Ka * Ia;
 
     // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term  = Ks*I*pow(max(0.0,dot(r,v)),q); // PREENCH AQUI o termo especular de Phong
+    vec3 blinn_phong_specular_term  = Ks*I*pow(max(0.0,dot(n,h)),q);
     // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
     // necessário:
     // 1) Habilitar a operação de "blending" de OpenGL logo antes de realizar o
