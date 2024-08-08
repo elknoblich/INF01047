@@ -221,6 +221,13 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/floor_tiles_04_diff_4k.jpg");
    LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif");
 
+   //Shark Textures:
+   LoadTextureImage("../../data/texture.jpg");
+   LoadTextureImage("../../data/texture_N.jpg");
+   LoadTextureImage("../../data/texture_S.jpg");
+
+
+   // Obj Load:
    ObjModel spheremodel("../../data/sphere.obj");
    ComputeNormals(&spheremodel);
    BuildTrianglesAndAddToVirtualScene(&spheremodel);
