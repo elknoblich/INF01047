@@ -593,7 +593,9 @@ void LoadShadersFromFiles() {
    glUseProgram(g_GpuProgramID);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark0"), 2);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark1"), 3);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 4);
    glUseProgram(0);
 }
 
