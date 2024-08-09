@@ -218,9 +218,8 @@ int main(int argc, char *argv[]) {
 
    LoadShadersFromFiles();
 
-   LoadTextureImage("../../data/floor_tiles_04_diff_4k.jpg");
-   LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif");
-
+   LoadTextureImage("../../data/grassy_cobblestone_diff_4k.jpg");
+   LoadTextureImage("../../data/grama_text.jpg");
    //Shark Textures:
    LoadTextureImage("../../data/texture.jpg");
    LoadTextureImage("../../data/texture_N.jpg");
@@ -251,6 +250,8 @@ int main(int argc, char *argv[]) {
    ObjModel sharkmodel("../../data/shark.obj");
    ComputeNormals(&sharkmodel);
    BuildTrianglesAndAddToVirtualScene(&sharkmodel);
+
+
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -289,11 +290,11 @@ int main(int argc, char *argv[]) {
    static_objects_list.push_back(aabb_cube2);
    ++current_sobj_id;
 
-   model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-   AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
-   cam_collision_map[aabb_cube3] = false;
-   static_objects_list.push_back(aabb_cube3);
-   ++current_sobj_id;
+   // model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+   //AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   //cam_collision_map[aabb_cube3] = false;
+   //static_objects_list.push_back(aabb_cube3);
+   //++current_sobj_id;
 
    model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
    AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
@@ -452,7 +453,7 @@ int main(int argc, char *argv[]) {
 #define CUBE   3
 #define BUTTON 4
 #define SHARK  5
-
+#define GROUND 6
       int i = 0;
 
       for (const auto &current_aabb: static_objects_list) {
@@ -477,10 +478,11 @@ int main(int argc, char *argv[]) {
       }
 
 
-      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
+      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(5.0f, 1.0f, 50.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
+
 
 
       float tmin;
@@ -535,8 +537,8 @@ void LoadTextureImage(const char *filename) {
    glGenTextures(1, &texture_id);
    glGenSamplers(1, &sampler_id);
 
-   glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-   glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
    glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -591,8 +593,8 @@ void LoadShadersFromFiles() {
    g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
 
    glUseProgram(g_GpuProgramID);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Ground"), 0);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Grass"), 1);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark0"), 2);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark1"), 3);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 4);

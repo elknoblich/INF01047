@@ -25,6 +25,7 @@ uniform mat4 projection;
 #define CUBE 3
 #define BUTTON 4
 #define SHARK  5
+#define GROUND 6
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -32,8 +33,8 @@ uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
 // Variáveis para acesso das imagens de textura
-uniform sampler2D TextureImage0;
-uniform sampler2D TextureImage1;
+uniform sampler2D Ground;
+uniform sampler2D Grass;
 uniform sampler2D Shark0;
 uniform sampler2D Shark1;
 uniform sampler2D Shark2;
@@ -84,12 +85,12 @@ void main()
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
     }
-    else if ( object_id == PLANE )
+    else if ( object_id == PLANE)
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
-        U = texcoords.x;
-        V = texcoords.y;
-        Kd = texture(TextureImage0, vec2(U,V)).rgb;
+        U = texcoords.x * 2;
+        V = texcoords.y * 10;
+        Kd = texture(Ground, vec2(U,V)).rgb;
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
@@ -143,7 +144,7 @@ void main()
     // Alpha default = 1 = 100% opaco = 0% transparente
     color.a = 1;
 
-    color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
+    color.rgb = lambert_diffuse_term + ambient_term + blinn_phong_specular_term;
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
