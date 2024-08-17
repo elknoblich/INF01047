@@ -290,11 +290,11 @@ int main(int argc, char *argv[]) {
    static_objects_list.push_back(aabb_cube2);
    ++current_sobj_id;
 
-   // model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-   //AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
-   //cam_collision_map[aabb_cube3] = false;
-   //static_objects_list.push_back(aabb_cube3);
-   //++current_sobj_id;
+   model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+   AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube3] = false;
+   static_objects_list.push_back(aabb_cube3);
+   ++current_sobj_id;
 
    model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
    AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
@@ -478,11 +478,10 @@ int main(int argc, char *argv[]) {
       }
 
 
-      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(5.0f, 1.0f, 50.0f);
+      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
-
 
 
       float tmin;
@@ -494,7 +493,7 @@ int main(int argc, char *argv[]) {
          show_shark = !show_shark;
       }
       if (show_shark) {
-         model = Matrix_Translate(-12.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0) * Matrix_Scale(2.0f, 2.0f, 2.0f);
+         model = Matrix_Translate(-12.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0) * Matrix_Scale(1.0f, 1.0f, 1.0f);
          glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
          glUniform1i(g_object_id_uniform, SHARK);
          DrawVirtualObject("Object_TexMap_0");

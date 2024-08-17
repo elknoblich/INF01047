@@ -89,7 +89,7 @@ void main()
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x * 2;
-        V = texcoords.y * 10;
+        V = texcoords.y * 2;
         Kd = texture(Ground, vec2(U,V)).rgb;
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.0,0.0,0.0);
