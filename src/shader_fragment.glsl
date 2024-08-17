@@ -104,8 +104,10 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
         Kd = texture(Shark0, vec2(U,V)).rgb;
-        Ka = texture(Shark1, vec2(U,V)).rgb;
-        Ks = texture(Shark2, vec2(U,V)).rgb;
+        //Ka = texture(Shark1, vec2(U,V)).rgb;
+        Ka = vec3(0.0,0.0,0.0);
+        //Ks = texture(Shark2, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.0,0.0);
     }else{
 
         Kd = vec3(0.0,0.0,0.0);
@@ -117,7 +119,7 @@ void main()
     // Obtemos a refletância difusa a partir da leitura da imagem TextureImage0
 
      // Espectro da fonte de iluminação
-    vec3 I = vec3(1.0,1.0,1.0);
+    vec3 I = vec3(0.8,.8,0.8);
 
     // Espectro da luz ambiente
     vec3 Ia = vec3(0.2,0.2,0.2);
@@ -128,7 +130,6 @@ void main()
     // Termo ambiente
     vec3 ambient_term = Ka * Ia;
 
-    // Termo especular utilizando o modelo de iluminação de Phong
     vec3 blinn_phong_specular_term  = Ks*I*pow(max(0.0,dot(n,h)),q);
     // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
     // necessário:

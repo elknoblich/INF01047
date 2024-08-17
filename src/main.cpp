@@ -278,6 +278,10 @@ int main(int argc, char *argv[]) {
 
    glm::mat4 model = Matrix_Identity();
 
+   model = Matrix_Translate(-24.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, current_sobj_id, "Object_TexMap_0");
+   ++current_sobj_id;
+
    model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
    AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
    cam_collision_map[aabb_cube1] = false;
@@ -320,7 +324,7 @@ int main(int argc, char *argv[]) {
    cam_collision_map[aabb_button3] = false;
    ++current_sobj_id;
 
-   bool show_shark = false;
+   bool shark_mode = false;
 
 #define NUM_AABB_OBJ 4
    float t_first[current_sobj_id];
@@ -345,10 +349,9 @@ int main(int argc, char *argv[]) {
       float z = r * cos(g_CameraPhi) * cos(g_CameraTheta);
       float x = r * cos(g_CameraPhi) * sin(g_CameraTheta);
 
-      // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
-      // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
       glm::vec4 velocity = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-      if (g_freeCam) {
+
+      if (!shark_mode) {
          float current_time = (float)glfwGetTime();
 
          camera_view_vector = glm::vec4(x, -y, z, 0.0f);
@@ -415,13 +418,47 @@ int main(int argc, char *argv[]) {
             ++count;
          }
 
+         cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
+         interaction_sphere.update_sphere(camera_position_c, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+      } else if (shark_mode) {
+
+         camera_lookat_l    = aabb_shark.get_center_point();
+         camera_position_c  = glm::vec4(20.0f, 0.0f, 0.0f, 0.0f) + camera_lookat_l;
+         camera_view_vector = camera_lookat_l - camera_position_c;
+
+         float current_time = (float)glfwGetTime();
+         float delta_t      = current_time - prev_time;
+         prev_time          = current_time;
+
+
+         if (g_W_pressed) {
+            velocity += glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+         }
+
+         if (g_A_pressed) {
+            velocity += glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+         }
+
+         if (g_D_pressed) {
+            velocity += glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+         }
+
+         if (g_S_pressed) {
+            velocity += glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
+         }
+
+         if (velocity.x != 0 || velocity.z != 0) {
+            velocity = velocity / norm(velocity);
+         }
+         glm::vec4 shark_movement = velocity * speed * delta_t;
+         aabb_shark.update_aabb(Matrix_Translate(0.0f, shark_movement.y, shark_movement.z) * aabb_shark.get_model(),
+                                g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max);
+
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c;
       }
-      cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
-      interaction_sphere.update_sphere(camera_position_c, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
 
       glm::mat4 projection;
@@ -442,7 +479,6 @@ int main(int argc, char *argv[]) {
          projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
       }
 
-      glm::mat4 model = Matrix_Identity();
 
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
@@ -488,12 +524,11 @@ int main(int argc, char *argv[]) {
       glm::vec4 intersec_point;
       bool button_ray_intersec =
           ray_to_AABB_intersec(camera_position_c, camera_view_vector / norm(camera_view_vector), aabb_button, tmin, intersec_point);
-
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
-         show_shark = !show_shark;
+         shark_mode = true;
       }
-      if (show_shark) {
-         model = Matrix_Translate(-12.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+      if (shark_mode) {
+         model = aabb_shark.get_model();
          glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
          glUniform1i(g_object_id_uniform, SHARK);
          DrawVirtualObject("Object_TexMap_0");

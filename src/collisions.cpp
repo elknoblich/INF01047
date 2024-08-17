@@ -45,6 +45,18 @@ void AABB::update_aabb(glm::vec4 center_point, glm::vec4 size) {
    this->bbox_max.z = std::fmax(p1.z, p2.z);
 };
 
+void AABB::update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 bbox_max_local) {
+   glm::vec4 bbox_min_global = new_model * glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f);
+   glm::vec4 bbox_max_global = new_model * glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f);
+   this->bbox_min            = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
+   this->bbox_max            = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
+   this->model               = new_model;
+}
+glm::vec4 AABB::get_center_point() {
+   glm::vec4 center_point = glm::vec4((this->bbox_min.x + this->bbox_max.x) / 2, (this->bbox_min.y + this->bbox_max.y) / 2,
+                                      (this->bbox_min.z + this->bbox_max.z) / 2, 1.0f);
+   return center_point;
+};
 bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
    glm::vec3 aMin = aabb1.get_min();
    glm::vec3 aMax = aabb1.get_max();
