@@ -2,14 +2,14 @@
 
 ## Checklist:
 - [x] Malhas poligonais complexas 
-- [ ] Transformações geométricas controladas pelo usuário
+- [x] Transformações geométricas controladas pelo usuário
 - [x] Câmera livre
 - [ ] Câmera look-at
 - [x] Instâncias de objetos
 - [x] Três tipos de testes de intersecção 
-- [ ] Modelo de Iluminação Difusa 
-- [ ] Modelo de Iluminação Blinn-Phong
+- [x] Modelo de Iluminação Difusa 
+- [x] Modelo de Iluminação Blinn-Phong
 - [ ] Modelos de Interpolação de Phong e Gouraud
-- [ ] Mapeamento de texturas em todos os objetos
+- [x] Mapeamento de texturas em todos os objetos
 - [ ] Movimentação com curva Bézier cúbica
 - [ ] Animações baseadas no tempo 
