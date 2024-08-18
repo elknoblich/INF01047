@@ -26,6 +26,7 @@ uniform mat4 projection;
 #define BUTTON 4
 #define SHARK  5
 #define GROUND 6
+#define FISH 7
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -38,6 +39,7 @@ uniform sampler2D Grass;
 uniform sampler2D Shark0;
 uniform sampler2D Shark1;
 uniform sampler2D Shark2;
+uniform sampler2D Fish;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -107,6 +109,13 @@ void main()
         //Ka = texture(Shark1, vec2(U,V)).rgb;
         Ka = vec3(0.0,0.0,0.0);
         //Ks = texture(Shark2, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.0,0.0);
+    }else if(object_id == FISH)
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+        Kd = texture(Fish, vec2(U,V)).rgb;
+        Ka = vec3(0.0,0.0,0.0);
         Ks = vec3(0.0,0.0,0.0);
     }else{
 

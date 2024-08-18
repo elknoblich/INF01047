@@ -226,6 +226,7 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/texture.jpg");
    LoadTextureImage("../../data/texture_N.jpg");
    LoadTextureImage("../../data/texture_S.jpg");
+   LoadTextureImage("../../data/fish.jpg");
 
 
    // Obj Load:
@@ -253,6 +254,9 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&sharkmodel);
    BuildTrianglesAndAddToVirtualScene(&sharkmodel);
 
+   ObjModel fishmodel("../../data/fish.obj");
+   ComputeNormals(&fishmodel);
+   BuildTrianglesAndAddToVirtualScene(&fishmodel);
 
    if (argc > 1) {
       ObjModel model(argv[1]);
@@ -282,6 +286,18 @@ int main(int argc, char *argv[]) {
 
    model = Matrix_Translate(-80.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, current_sobj_id, "Object_TexMap_0");
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
    ++current_sobj_id;
 
    //FP arena
@@ -541,6 +557,7 @@ int main(int argc, char *argv[]) {
 #define BUTTON 4
 #define SHARK  5
 #define GROUND 6
+#define FISH 7
       int i = 0;
 
       for (const auto &current_aabb: static_objects_list) {
@@ -594,11 +611,35 @@ int main(int argc, char *argv[]) {
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
          shark_mode = true;
       }
-      if (shark_mode) {
+      if (shark_mode)
+      {
          model = aabb_shark.get_model();
+
          glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
          glUniform1i(g_object_id_uniform, SHARK);
+
          DrawVirtualObject("Object_TexMap_0");
+
+         model = aabb_fish1.get_model();
+
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+         glUniform1i(g_object_id_uniform, FISH);
+
+         DrawVirtualObject("Object_BlueTaT.jpg");
+
+         model = aabb_fish2.get_model();
+
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+         glUniform1i(g_object_id_uniform, FISH);
+
+         DrawVirtualObject("Object_BlueTaT.jpg");
+
+         model = aabb_fish3.get_model();
+
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+         glUniform1i(g_object_id_uniform, FISH);
+
+         DrawVirtualObject("Object_BlueTaT.jpg");
       }
 
       TextRendering_ShowEulerAngles(window);
