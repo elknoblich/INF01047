@@ -112,6 +112,9 @@ void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
+glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
+void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
+
 struct SceneObject {
    std::string name;
    size_t first_index;
@@ -377,6 +380,8 @@ int main(int argc, char *argv[]) {
    float shark_rotation         = 0;
    while (!glfwWindowShouldClose(window)) {
 
+      float current_time = (float)glfwGetTime();
+
       g_LeftMouseButtonClicked = false;
 
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -393,7 +398,6 @@ int main(int argc, char *argv[]) {
       glm::vec4 velocity = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
       if (!shark_mode) {
-         float current_time = (float)glfwGetTime();
 
          camera_view_vector = glm::vec4(x, -y, z, 0.0f);
 
@@ -640,6 +644,30 @@ int main(int argc, char *argv[]) {
          glUniform1i(g_object_id_uniform, FISH);
 
          DrawVirtualObject("Object_BlueTaT.jpg");
+
+         animateAABB(aabb_fish1,
+            glm::vec3(-80.0f, 2.0f, 0.0f),
+            glm::vec3(-70.0f, 2.0f, 2.0f),
+            glm::vec3(-90.0f, 2.0f, -2.0f),
+            glm::vec3(-80.0f, 2.0f, 0.0f),
+            speed,
+            current_time);
+
+         animateAABB(aabb_fish2,
+            glm::vec3(-80.0f, 0.0f, 0.0f),
+            glm::vec3(-90.0f, 2.0f, -2.0f),
+            glm::vec3(-70.0f, 2.0f, 2.0f),
+            glm::vec3(-80.0f, 0.0f, 0.0f),
+            speed,
+            current_time);
+
+         animateAABB(aabb_fish3,
+            glm::vec3(-80.0f, -2.0f, 0.0f),
+            glm::vec3(-60.0f, 2.0f, 3.0f),
+            glm::vec3(-100.0f, 2.0f, -3.0f),
+            glm::vec3(-80.0f, -2.0f, 0.0f),
+            speed,
+            current_time);
       }
 
       TextRendering_ShowEulerAngles(window);
@@ -656,6 +684,36 @@ int main(int argc, char *argv[]) {
    glfwTerminate();
 
    return 0;
+}
+
+glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
+{
+   float u = 1 - t;
+   float tt = t * t;
+   float uu = u * u;
+   float uuu = uu * u;
+   float ttt = tt * t;
+
+   glm::vec3 p = uuu * p0; // First term
+   p += 3 * uu * t * p1;   // Second term
+   p += 3 * u * tt * p2;   // Third term
+   p += ttt * p3;          // Fourth term
+
+   return p;
+}
+
+void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
+    // Use modulo to loop the animation over the duration of the Bezier curve
+    float t = fmod(elapsedTime * speed, 1.0f); // t will keep looping from 0 to 1
+
+    glm::vec3 newPosition = Bezier(t, p0, p1, p2, p3);
+
+    // Update the AABB position using the calculated Bezier curve point
+    glm::vec3 bbox_min_local = box.get_min();
+    glm::vec3 bbox_max_local = box.get_max();
+    glm::mat4 newModelMatrix = glm::translate(glm::mat4(1.0f), newPosition);
+
+    box.update_aabb(newModelMatrix, bbox_min_local, bbox_max_local);
 }
 
 void LoadTextureImage(const char *filename) {
