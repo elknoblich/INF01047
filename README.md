@@ -4,14 +4,16 @@
     Durante o desenvolvimento do trabalho final, os integrantes fizeram o trabalho final tanto individualmente quanto em grupo, <i>pair programming</i>, em sala da aula nos dias das apresentações finais e parciais. Logo, o histórico <i>commit</i> não é uma boa indicação do que cada integrante fez no trabalho.
 </p>
 
-<ul>
-    <li>
-        Erick: criação do repositório, renderização do tubarão, <i>triggers</i> do tuburão a partir dos botões, criação do relatório.
-    </li>
-    <li>
-        Nicolas: reutilização da câmera livre do laboratório dois, interação com o botão esquerdo do mouse, renderização do plano, renderização dos botões.
-    </li>
-</ul>
+<div align="justify">
+    <ul>
+        <li>
+            Erick: criação do repositório, renderização do tubarão, <i>triggers</i> do tuburão a partir dos botões, criação do relatório.
+        </li>
+        <li>
+            Nicolas: reutilização da câmera livre do laboratório dois, interação com o botão esquerdo do mouse, renderização do plano, renderização dos botões.
+        </li>
+    </ul>
+</div>
 
 <p align="justify">
     Ferramentas como ChatGPT, Github Copilot e OpenAI Codex não foram utilizadas durante o desenvolvimento no trabalho para evitar "cola". Entretanto, aproveitamos os códigos já desenvolvidos nos laboratórios anteriores, como a câmera de movimento livre.
