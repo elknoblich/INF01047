@@ -356,6 +356,7 @@ int main(int argc, char *argv[]) {
    //glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
    glm::vec4 camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
    glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+   float shark_rotation         = 0;
    while (!glfwWindowShouldClose(window)) {
 
       g_LeftMouseButtonClicked = false;
@@ -453,28 +454,47 @@ int main(int argc, char *argv[]) {
          float delta_t      = current_time - prev_time;
          prev_time          = current_time;
 
-         if (g_W_pressed) {
-            velocity += glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-         }
+
+         const float ROTATION_CONST      = 0.523599;
+         bool is_rotated                 = false;
+         glm::mat4 shark_rotation_matrix = Matrix_Identity();
 
          if (g_A_pressed) {
-            velocity += glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+            shark_rotation = ROTATION_CONST * delta_t;
+            is_rotated     = true;
          }
 
          if (g_D_pressed) {
-            velocity += glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+            shark_rotation = -ROTATION_CONST * delta_t;
+            is_rotated     = true;
+         }
+
+
+         if (is_rotated) {
+            shark_rotation_matrix = Matrix_Rotate_Y(shark_rotation);
+            aabb_shark.update_aabb(aabb_shark.get_model() * shark_rotation_matrix, g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                   g_VirtualScene["Object_TexMap_0"].bbox_max);
+         }
+
+         glm::vec4 forward_direction = glm::vec4(-aabb_shark.get_model()[0].x, -aabb_shark.get_model()[0].y, -aabb_shark.get_model()[0].z, 0.0f);
+
+         if (g_W_pressed) {
+            velocity += forward_direction;
          }
 
          if (g_S_pressed) {
-            velocity += glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
+            velocity -= forward_direction;
          }
 
          if (velocity.x != 0 || velocity.z != 0) {
             velocity = velocity / norm(velocity);
          }
-         glm::vec4 shark_movement = velocity * speed * delta_t;
-         aabb_shark.update_aabb(Matrix_Translate(0.0f, shark_movement.y, shark_movement.z) * aabb_shark.get_model(),
-                                g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max);
+
+         velocity = velocity * speed * 5.0f * delta_t;
+
+         aabb_shark.update_aabb(Matrix_Translate(velocity.x, 0.0f, velocity.z) * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                g_VirtualScene["Object_TexMap_0"].bbox_max);
+
 
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
