@@ -7,10 +7,11 @@
 <div align="justify">
     <ul>
         <li>
-            Erick: criação do repositório, renderização do tubarão, <i>triggers</i> do tuburão a partir dos botões, criação do relatório.
+            Erick: criação do repositório, renderização do tubarão, <i>triggers</i> do tuburão a partir dos botões,
+            renderização dos peixes, textura dos peixes, bézier dos peixes, criação do relatório.
         </li>
         <li>
-            Nicolas: reutilização da câmera livre do laboratório dois, interação com o botão esquerdo do mouse, renderização do plano, renderização dos botões.
+            Nicolas: reutilização da câmera livre do laboratório dois, interação com o botão esquerdo do mouse, renderização do plano, renderização dos botões, textura do tubarão, movimentação do tuburão.
         </li>
     </ul>
 </div>
