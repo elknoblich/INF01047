@@ -278,10 +278,11 @@ int main(int argc, char *argv[]) {
 
    glm::mat4 model = Matrix_Identity();
 
-   model = Matrix_Translate(-24.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   model = Matrix_Translate(-80.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, current_sobj_id, "Object_TexMap_0");
    ++current_sobj_id;
 
+   //FP arena
    model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
    AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
    cam_collision_map[aabb_cube1] = false;
@@ -307,6 +308,7 @@ int main(int argc, char *argv[]) {
    ++current_sobj_id;
 
 
+   //Buttons
    model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
    AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
    static_objects_list.push_back(aabb_button);
@@ -324,9 +326,29 @@ int main(int argc, char *argv[]) {
    cam_collision_map[aabb_button3] = false;
    ++current_sobj_id;
 
-   bool shark_mode = false;
+   //Shark Arena Walls
+   std::list<AABB> shark_arena_walls;
+   model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_1);
+   ++current_sobj_id;
 
-#define NUM_AABB_OBJ 4
+   model = Matrix_Translate(-80.0f, 0.0f, 10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_2);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-80.0f, 0.0f, -10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_3);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-90.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Scale(10.f, 0.1f, 10.0f);
+   AABB aabb_wall_4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_4);
+   ++current_sobj_id;
+
+   bool shark_mode = false;
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 
@@ -424,13 +446,12 @@ int main(int argc, char *argv[]) {
       } else if (shark_mode) {
 
          camera_lookat_l    = aabb_shark.get_center_point();
-         camera_position_c  = glm::vec4(20.0f, 0.0f, 0.0f, 0.0f) + camera_lookat_l;
+         camera_position_c  = glm::vec4(10.0f, 0.0f, 0.0f, 0.0f) + camera_lookat_l;
          camera_view_vector = camera_lookat_l - camera_position_c;
 
          float current_time = (float)glfwGetTime();
          float delta_t      = current_time - prev_time;
          prev_time          = current_time;
-
 
          if (g_W_pressed) {
             velocity += glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
@@ -464,7 +485,7 @@ int main(int argc, char *argv[]) {
       glm::mat4 projection;
 
       float nearplane = -0.1f;
-      float farplane  = -40.0f;
+      float farplane  = -30.0f;
 
       if (g_UsePerspectiveProjection) {
 
@@ -508,6 +529,22 @@ int main(int argc, char *argv[]) {
             glUniform1i(g_object_id_uniform, BUTTON);
             DrawVirtualObject("object_0");
             cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+         }
+
+         ++i;
+      }
+
+
+      for (const auto &current_aabb: shark_arena_walls) {
+
+         glm::mat4 current_model = current_aabb.get_model();
+         std::string type        = current_aabb.get_type();
+
+         if (type == "Cube") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, CUBE);
+            DrawVirtualObject("Cube");
+            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
          }
 
          ++i;
