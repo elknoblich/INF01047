@@ -140,6 +140,8 @@ bool g_W_pressed                = false;
 bool g_A_pressed                = false;
 bool g_D_pressed                = false;
 bool g_S_pressed                = false;
+bool g_LSHIFT_pressed           = false;
+bool g_LCTRL_pressed            = false;
 bool g_freeCam                  = true;
 
 float g_CameraTheta    = 0.0f;
@@ -486,14 +488,22 @@ int main(int argc, char *argv[]) {
             velocity -= forward_direction;
          }
 
+         if (g_LCTRL_pressed) {
+            velocity -= camera_up_vector;
+         }
+
+         if (g_LSHIFT_pressed) {
+            velocity += camera_up_vector;
+         }
+
          if (velocity.x != 0 || velocity.z != 0) {
             velocity = velocity / norm(velocity);
          }
 
          velocity = velocity * speed * 5.0f * delta_t;
 
-         aabb_shark.update_aabb(Matrix_Translate(velocity.x, 0.0f, velocity.z) * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                g_VirtualScene["Object_TexMap_0"].bbox_max);
+         aabb_shark.update_aabb(Matrix_Translate(velocity.x, velocity.y, velocity.z) * aabb_shark.get_model(),
+                                g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max);
 
 
       } else {
@@ -1192,6 +1202,29 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
       else if (action == GLFW_RELEASE)
          g_W_pressed = false;
+
+      else if (action == GLFW_REPEAT)
+         ;
+   }
+   if (key == GLFW_KEY_LEFT_CONTROL) {
+
+      if (action == GLFW_PRESS)
+         g_LCTRL_pressed = true;
+
+      else if (action == GLFW_RELEASE)
+         g_LCTRL_pressed = false;
+
+      else if (action == GLFW_REPEAT)
+         ;
+   }
+
+   if (key == GLFW_KEY_LEFT_SHIFT) {
+
+      if (action == GLFW_PRESS)
+         g_LSHIFT_pressed = true;
+
+      else if (action == GLFW_RELEASE)
+         g_LSHIFT_pressed = false;
 
       else if (action == GLFW_REPEAT)
          ;
