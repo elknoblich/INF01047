@@ -140,6 +140,8 @@ bool g_W_pressed                = false;
 bool g_A_pressed                = false;
 bool g_D_pressed                = false;
 bool g_S_pressed                = false;
+bool g_LSHIFT_pressed           = false;
+bool g_LCTRL_pressed            = false;
 bool g_freeCam                  = true;
 
 float g_CameraTheta    = 0.0f;
@@ -278,6 +280,11 @@ int main(int argc, char *argv[]) {
 
    glm::mat4 model = Matrix_Identity();
 
+   model = Matrix_Translate(-80.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+   AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, current_sobj_id, "Object_TexMap_0");
+   ++current_sobj_id;
+
+   //FP arena
    model = Matrix_Translate(10.0f, -0.6f, 0.0f) * Matrix_Scale(0.03f, 1.0f, 10.0f);
    AABB aabb_cube1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
    cam_collision_map[aabb_cube1] = false;
@@ -290,11 +297,11 @@ int main(int argc, char *argv[]) {
    static_objects_list.push_back(aabb_cube2);
    ++current_sobj_id;
 
-   // model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
-   //AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
-   //cam_collision_map[aabb_cube3] = false;
-   //static_objects_list.push_back(aabb_cube3);
-   //++current_sobj_id;
+   model = Matrix_Translate(0.0f, -0.6f, 10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
+   AABB aabb_cube3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   cam_collision_map[aabb_cube3] = false;
+   static_objects_list.push_back(aabb_cube3);
+   ++current_sobj_id;
 
    model = Matrix_Translate(0.0f, -0.6f, -10.0f) * Matrix_Scale(10.0f, 1.0f, 0.03f);
    AABB aabb_cube4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
@@ -303,6 +310,7 @@ int main(int argc, char *argv[]) {
    ++current_sobj_id;
 
 
+   //Buttons
    model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
    AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
    static_objects_list.push_back(aabb_button);
@@ -320,9 +328,29 @@ int main(int argc, char *argv[]) {
    cam_collision_map[aabb_button3] = false;
    ++current_sobj_id;
 
-   bool show_shark = false;
+   //Shark Arena Walls
+   std::list<AABB> shark_arena_walls;
+   model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_1);
+   ++current_sobj_id;
 
-#define NUM_AABB_OBJ 4
+   model = Matrix_Translate(-80.0f, 0.0f, 10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_2);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-80.0f, 0.0f, -10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   AABB aabb_wall_3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_3);
+   ++current_sobj_id;
+
+   model = Matrix_Translate(-90.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Scale(10.f, 0.1f, 10.0f);
+   AABB aabb_wall_4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   shark_arena_walls.push_back(aabb_wall_4);
+   ++current_sobj_id;
+
+   bool shark_mode = false;
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 
@@ -330,6 +358,7 @@ int main(int argc, char *argv[]) {
    //glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
    glm::vec4 camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
    glm::vec4 camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+   float shark_rotation         = 0;
    while (!glfwWindowShouldClose(window)) {
 
       g_LeftMouseButtonClicked = false;
@@ -345,10 +374,9 @@ int main(int argc, char *argv[]) {
       float z = r * cos(g_CameraPhi) * cos(g_CameraTheta);
       float x = r * cos(g_CameraPhi) * sin(g_CameraTheta);
 
-      // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
-      // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
       glm::vec4 velocity = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-      if (g_freeCam) {
+
+      if (!shark_mode) {
          float current_time = (float)glfwGetTime();
 
          camera_view_vector = glm::vec4(x, -y, z, 0.0f);
@@ -415,19 +443,79 @@ int main(int argc, char *argv[]) {
             ++count;
          }
 
+         cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
+         interaction_sphere.update_sphere(camera_position_c, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+      } else if (shark_mode) {
+
+         camera_lookat_l    = aabb_shark.get_center_point();
+         camera_position_c  = glm::vec4(10.0f, 0.0f, 0.0f, 0.0f) + camera_lookat_l;
+         camera_view_vector = camera_lookat_l - camera_position_c;
+
+         float current_time = (float)glfwGetTime();
+         float delta_t      = current_time - prev_time;
+         prev_time          = current_time;
+
+
+         const float ROTATION_CONST      = 0.523599;
+         bool is_rotated                 = false;
+         glm::mat4 shark_rotation_matrix = Matrix_Identity();
+
+         if (g_A_pressed) {
+            shark_rotation = ROTATION_CONST * delta_t;
+            is_rotated     = true;
+         }
+
+         if (g_D_pressed) {
+            shark_rotation = -ROTATION_CONST * delta_t;
+            is_rotated     = true;
+         }
+
+
+         if (is_rotated) {
+            shark_rotation_matrix = Matrix_Rotate_Y(shark_rotation);
+            aabb_shark.update_aabb(aabb_shark.get_model() * shark_rotation_matrix, g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                   g_VirtualScene["Object_TexMap_0"].bbox_max);
+         }
+
+         glm::vec4 forward_direction = glm::vec4(-aabb_shark.get_model()[0].x, -aabb_shark.get_model()[0].y, -aabb_shark.get_model()[0].z, 0.0f);
+
+         if (g_W_pressed) {
+            velocity += forward_direction;
+         }
+
+         if (g_S_pressed) {
+            velocity -= forward_direction;
+         }
+
+         if (g_LCTRL_pressed) {
+            velocity -= camera_up_vector;
+         }
+
+         if (g_LSHIFT_pressed) {
+            velocity += camera_up_vector;
+         }
+
+         if (velocity.x != 0 || velocity.z != 0) {
+            velocity = velocity / norm(velocity);
+         }
+
+         velocity = velocity * speed * 5.0f * delta_t;
+
+         aabb_shark.update_aabb(Matrix_Translate(velocity.x, velocity.y, velocity.z) * aabb_shark.get_model(),
+                                g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max);
+
+
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c;
       }
-      cam_aabb.update_aabb(camera_position_c, camera_aabb_size);
-      interaction_sphere.update_sphere(camera_position_c, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-
       glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
 
       glm::mat4 projection;
 
       float nearplane = -0.1f;
-      float farplane  = -40.0f;
+      float farplane  = -30.0f;
 
       if (g_UsePerspectiveProjection) {
 
@@ -442,7 +530,6 @@ int main(int argc, char *argv[]) {
          projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
       }
 
-      glm::mat4 model = Matrix_Identity();
 
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
@@ -478,23 +565,37 @@ int main(int argc, char *argv[]) {
       }
 
 
-      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(5.0f, 1.0f, 50.0f);
+      for (const auto &current_aabb: shark_arena_walls) {
+
+         glm::mat4 current_model = current_aabb.get_model();
+         std::string type        = current_aabb.get_type();
+
+         if (type == "Cube") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, CUBE);
+            DrawVirtualObject("Cube");
+            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+         }
+
+         ++i;
+      }
+
+
+      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
       glUniform1i(g_object_id_uniform, PLANE);
       DrawVirtualObject("the_plane");
-
 
 
       float tmin;
       glm::vec4 intersec_point;
       bool button_ray_intersec =
           ray_to_AABB_intersec(camera_position_c, camera_view_vector / norm(camera_view_vector), aabb_button, tmin, intersec_point);
-
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
-         show_shark = !show_shark;
+         shark_mode = true;
       }
-      if (show_shark) {
-         model = Matrix_Translate(-12.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0) * Matrix_Scale(2.0f, 2.0f, 2.0f);
+      if (shark_mode) {
+         model = aabb_shark.get_model();
          glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
          glUniform1i(g_object_id_uniform, SHARK);
          DrawVirtualObject("Object_TexMap_0");
@@ -1101,6 +1202,29 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
       else if (action == GLFW_RELEASE)
          g_W_pressed = false;
+
+      else if (action == GLFW_REPEAT)
+         ;
+   }
+   if (key == GLFW_KEY_LEFT_CONTROL) {
+
+      if (action == GLFW_PRESS)
+         g_LCTRL_pressed = true;
+
+      else if (action == GLFW_RELEASE)
+         g_LCTRL_pressed = false;
+
+      else if (action == GLFW_REPEAT)
+         ;
+   }
+
+   if (key == GLFW_KEY_LEFT_SHIFT) {
+
+      if (action == GLFW_PRESS)
+         g_LSHIFT_pressed = true;
+
+      else if (action == GLFW_RELEASE)
+         g_LSHIFT_pressed = false;
 
       else if (action == GLFW_REPEAT)
          ;

@@ -26,6 +26,8 @@ class AABB {
    glm::vec3 get_max() const;
    glm::mat4 get_model() const;
    std::string get_type() const;
+   void update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 bbox_max_local);
+   glm::vec4 get_center_point();
    bool operator<(const AABB &other) const;
 };
 
