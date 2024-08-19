@@ -423,9 +423,7 @@ int main(int argc, char *argv[]) {
          prev_time     = current_time;
 
          glm::vec4 w_vector = -camera_view_vector / norm(camera_view_vector);
-         w_vector.y         = 0.0f;
          glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector) / norm(crossproduct(camera_up_vector, w_vector));
-         u_vector.y         = 0.0f;
 
          w_vector = w_vector / norm(w_vector);
          u_vector = u_vector / norm(u_vector);
