@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/fish.jpg");
    LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
    LoadTextureImage("../../data/coral_stone_wall_diff_4k.jpg");
-
+   LoadTextureImage("../../data/button.jpg");
 
    // Obj Load:
    ObjModel spheremodel("../../data/sphere.obj");
@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
    std::map<AABB, bool> shark_collision_map;
    //Shark Arena Walls
    std::list<AABB> shark_arena_walls;
-   model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
+   model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
    AABB aabb_wall_1(g_VirtualScene["Cube2"].bbox_min, g_VirtualScene["Cube2"].bbox_max, model, current_sobj_id, "Cube2");
    shark_arena_walls.push_back(aabb_wall_1);
    shark_collision_map[aabb_wall_1] = false;
@@ -537,17 +537,7 @@ int main(int argc, char *argv[]) {
                // Adjust velocity based on the time to collision
                velocity += velocity * t_first[count] * delta_t;
 
-               // Calculate collision normal
-               glm::vec4 collision_normal = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-               for (int i: {0, 1, 2}) {
-                  if (velocity[i] > 0.0f && aabb_shark.get_max()[i] > current_aabb.get_min()[i]) {
-                     collision_normal[i] = -1.0f;
-                  } else if (velocity[i] < 0.0f && aabb_shark.get_min()[i] < current_aabb.get_max()[i]) {
-                     collision_normal[i] = 1.0f;
-                  }
-               }
-
-               velocity = velocity - dotproduct(velocity, collision_normal) * collision_normal;
+               velocity = camera_up_vector;
 
                velocity = velocity * speed * 5.0f * delta_t;
                glm::mat4 shark_translation =
@@ -626,7 +616,7 @@ int main(int argc, char *argv[]) {
          ++i;
       }
 
-
+      i =  0;
       for (const auto &current_aabb: shark_arena_walls) {
 
          glm::mat4 current_model = current_aabb.get_model();
@@ -643,16 +633,31 @@ int main(int argc, char *argv[]) {
             glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
             glUniform1i(g_object_id_uniform, CUBE2);
             DrawVirtualObject("Cube2");
-            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+            shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(aabb_shark, current_aabb, velocity, t_first[i], t_last[i]);
          } else if (type == "Cube3") {
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, CUBE3);
-            DrawVirtualObject("Cube3");
-            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+            //glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            //glUniform1i(g_object_id_uniform, CUBE3);
+           // DrawVirtualObject("Cube3");
+            //shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(aabb_shark, current_aabb, velocity, t_first[i], t_last[i]);
          }
          ++i;
       }
 
+      if(shark_collision_map[aabb_wall_1]){
+         printf("aabb_wall_1\n");
+      }
+
+      if(shark_collision_map[aabb_wall_2]){
+         printf("aabb_wall_2\n");
+      }
+
+      if(shark_collision_map[aabb_wall_3]){
+         printf("aabb_wall_3\n");
+      }
+
+      if(shark_collision_map[aabb_wall_4]){
+         printf("aabb_wall_4\n");
+      }
 
       model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -832,7 +837,8 @@ void LoadShadersFromFiles() {
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 4);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 5);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 6);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Wall"), 7);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Wall"), 7); 
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Button0"), 8);
    glUseProgram(0);
 }
 

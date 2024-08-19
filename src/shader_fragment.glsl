@@ -44,6 +44,7 @@ uniform sampler2D Shark2;
 uniform sampler2D Fish;
 uniform sampler2D Sand;
 uniform sampler2D Wall;
+uniform sampler2D Button0;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -86,8 +87,10 @@ void main()
     float q;
 
     if(object_id == BUTTON){
-        Kd = vec3(0.5,0.1,0.8);
-        Ks = vec3(0.0,0.0,0.0);
+        U = texcoords.x;
+        V = texcoords.y;
+        Kd = texture(Button0, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.2,0.2);
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
     }
@@ -98,14 +101,17 @@ void main()
         V = texcoords.y * 2;
         Kd = texture(Ground, vec2(U,V)).rgb;
         Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.0,0.0);
+        Ka = vec3(0.0,0.1,0.1);
         q = 1.0;
     }
     else if (object_id == CUBE){
-        Kd = vec3(0.5,0.5,0.5);
+        U = texcoords.x *2  ;
+        V = texcoords.y * 15 ;
+
+        Kd = texture(Wall, vec2(U,V)).rgb;
         Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.0,0.0);
-        q = 1.0;
+        Ka = vec3(0.0,0.1,0.1);
+        q = 0.2;
     }else if(object_id == SHARK){
         U = texcoords.x;
         V = texcoords.y;
@@ -120,7 +126,8 @@ void main()
         V = texcoords.y;
         Kd = texture(Fish, vec2(U,V)).rgb;
         Ka = vec3(0.0,0.0,0.0);
-        Ks = vec3(0.0,0.0,0.0);
+        Ks = vec3(0.1,0.03,0.01);
+        q = 0.8;
 
     }else if (object_id == CUBE2){
 
@@ -133,9 +140,10 @@ void main()
         float minz = bbox_min.z;
         float maxz = bbox_max.z;
 
-        U = (position_model.x - minx)/(maxx-minx);
-        V = (position_model.z - minz)/(maxz-minz);
-
+        //U = (position_model.x - minx)/(maxx-minx);
+        //V = (position_model.z - minz)/(maxz-minz);
+        U = texcoords.x * 20;
+        V = texcoords.y * 20;
         Kd = texture(Sand, vec2(U,V)).rgb;
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.0,0.0,0.0);
@@ -195,7 +203,12 @@ void main()
     // Alpha default = 1 = 100% opaco = 0% transparente
     color.a = 1;
 
-    color.rgb = lambert_diffuse_term + ambient_term + blinn_phong_specular_term;
+    if(object_id == SHARK){
+        color.rgb = lambert_diffuse_term;
+    }
+    else{
+        color.rgb = lambert_diffuse_term + ambient_term + blinn_phong_specular_term;
+    }
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
