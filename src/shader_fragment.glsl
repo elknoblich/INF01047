@@ -27,6 +27,8 @@ uniform mat4 projection;
 #define SHARK  5
 #define GROUND 6
 #define FISH 7
+#define CUBE2 8
+#define CUBE3 9
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -40,6 +42,8 @@ uniform sampler2D Shark0;
 uniform sampler2D Shark1;
 uniform sampler2D Shark2;
 uniform sampler2D Fish;
+uniform sampler2D Sand;
+uniform sampler2D Wall;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -117,6 +121,44 @@ void main()
         Kd = texture(Fish, vec2(U,V)).rgb;
         Ka = vec3(0.0,0.0,0.0);
         Ks = vec3(0.0,0.0,0.0);
+
+    }else if (object_id == CUBE2){
+
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        U = (position_model.x - minx)/(maxx-minx);
+        V = (position_model.z - minz)/(maxz-minz);
+
+        Kd = texture(Sand, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.0,0.0);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 1.0;
+
+
+    }else if(object_id == CUBE3){
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        U = (position_model.x - minx)/(maxx-minx);
+        V = (position_model.z - minz)/(maxz-minz);
+
+        Kd = texture(Wall, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.0,0.0);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 1.0;
     }else{
 
         Kd = vec3(0.0,0.0,0.0);
@@ -125,10 +167,9 @@ void main()
         q = 1.0;
     }
 
-    // Obtemos a refletância difusa a partir da leitura da imagem TextureImage0
 
      // Espectro da fonte de iluminação
-    vec3 I = vec3(0.8,.8,0.8);
+    vec3 I = vec3(0.27,0.54,0.90);
 
     // Espectro da luz ambiente
     vec3 Ia = vec3(0.2,0.2,0.2);

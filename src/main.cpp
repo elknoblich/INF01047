@@ -230,6 +230,8 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/texture_N.jpg");
    LoadTextureImage("../../data/texture_S.jpg");
    LoadTextureImage("../../data/fish.jpg");
+   LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
+   LoadTextureImage("../../data/coral_stone_wall_diff_4k.jpg");
 
 
    // Obj Load:
@@ -248,6 +250,14 @@ int main(int argc, char *argv[]) {
    ObjModel cubemodel("../../data/cube.obj");
    ComputeNormals(&cubemodel);
    BuildTrianglesAndAddToVirtualScene(&cubemodel);
+
+   ObjModel cube2model("../../data/cube2.obj");
+   ComputeNormals(&cube2model);
+   BuildTrianglesAndAddToVirtualScene(&cube2model);
+
+   ObjModel cube3model("../../data/cube3.obj");
+   ComputeNormals(&cube3model);
+   BuildTrianglesAndAddToVirtualScene(&cube3model);
 
    ObjModel buttonmodel("../../data/model.obj");
    ComputeNormals(&buttonmodel);
@@ -292,15 +302,18 @@ int main(int argc, char *argv[]) {
    ++current_sobj_id;
 
    model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
+   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+                   "Object_BlueTaT.jpg");
    ++current_sobj_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
+   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+                   "Object_BlueTaT.jpg");
    ++current_sobj_id;
 
    model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id, "Object_BlueTaT.jpg");
+   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+                   "Object_BlueTaT.jpg");
    ++current_sobj_id;
 
    //FP arena
@@ -347,25 +360,30 @@ int main(int argc, char *argv[]) {
    cam_collision_map[aabb_button3] = false;
    ++current_sobj_id;
 
+   std::map<AABB, bool> shark_collision_map;
    //Shark Arena Walls
    std::list<AABB> shark_arena_walls;
    model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
-   AABB aabb_wall_1(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   AABB aabb_wall_1(g_VirtualScene["Cube2"].bbox_min, g_VirtualScene["Cube2"].bbox_max, model, current_sobj_id, "Cube2");
    shark_arena_walls.push_back(aabb_wall_1);
+   shark_collision_map[aabb_wall_1] = false;
    ++current_sobj_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, 10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
-   AABB aabb_wall_2(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   AABB aabb_wall_2(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
    shark_arena_walls.push_back(aabb_wall_2);
+   shark_collision_map[aabb_wall_2] = false;
    ++current_sobj_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, -10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
-   AABB aabb_wall_3(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   AABB aabb_wall_3(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
    shark_arena_walls.push_back(aabb_wall_3);
+   shark_collision_map[aabb_wall_3] = false;
    ++current_sobj_id;
 
    model = Matrix_Translate(-90.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Scale(10.f, 0.1f, 10.0f);
-   AABB aabb_wall_4(g_VirtualScene["Cube"].bbox_min, g_VirtualScene["Cube"].bbox_max, model, current_sobj_id, "Cube");
+   AABB aabb_wall_4(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
+   shark_collision_map[aabb_wall_4] = false;
    shark_arena_walls.push_back(aabb_wall_4);
    ++current_sobj_id;
 
@@ -384,7 +402,7 @@ int main(int argc, char *argv[]) {
 
       g_LeftMouseButtonClicked = false;
 
-      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClearColor(0.0f, 0.2f, 0.9f, 0.6f);
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -504,10 +522,6 @@ int main(int argc, char *argv[]) {
             velocity += forward_direction;
          }
 
-         if (g_S_pressed) {
-            velocity -= forward_direction;
-         }
-
          if (g_LCTRL_pressed) {
             velocity -= camera_up_vector;
          }
@@ -519,13 +533,39 @@ int main(int argc, char *argv[]) {
          if (velocity.x != 0 || velocity.z != 0) {
             velocity = velocity / norm(velocity);
          }
+         int count = 0;
+         for (const auto &current_aabb: shark_arena_walls) {
+            if (shark_collision_map[current_aabb]) {
+               // Adjust velocity based on the time to collision
+               velocity += velocity * t_first[count] * delta_t;
 
-         velocity = velocity * speed * 5.0f * delta_t;
+               // Calculate collision normal
+               glm::vec4 collision_normal = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+               for (int i: {0, 1, 2}) {
+                  if (velocity[i] > 0.0f && aabb_shark.get_max()[i] > current_aabb.get_min()[i]) {
+                     collision_normal[i] = -1.0f;
+                  } else if (velocity[i] < 0.0f && aabb_shark.get_min()[i] < current_aabb.get_max()[i]) {
+                     collision_normal[i] = 1.0f;
+                  }
+               }
 
-         aabb_shark.update_aabb(Matrix_Translate(velocity.x, velocity.y, velocity.z) * aabb_shark.get_model(),
-                                g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max);
+               velocity = velocity - dotproduct(velocity, collision_normal) * collision_normal;
 
+               velocity = velocity * speed * 5.0f * delta_t;
+               glm::mat4 shark_translation =
+                   Matrix_Translate(velocity.x * (1.0f - t_first[count]), velocity.y * (1.0f - t_first[count]), velocity.z * (1.0f - t_first[count]));
 
+               aabb_shark.update_aabb(shark_translation * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
+
+            } else {
+               velocity                    = velocity * speed * 5.0f * delta_t;
+               glm::mat4 shark_translation = Matrix_Translate(velocity.x, velocity.y, velocity.z);
+
+               aabb_shark.update_aabb(shark_translation * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
+            }
+         }
       } else {
          camera_position_c  = glm::vec4(x, y, z, 1.0f);
          camera_view_vector = camera_lookat_l - camera_position_c;
@@ -561,7 +601,10 @@ int main(int argc, char *argv[]) {
 #define BUTTON 4
 #define SHARK  5
 #define GROUND 6
-#define FISH 7
+#define FISH   7
+#define CUBE2  8
+#define CUBE3  9
+
       int i = 0;
 
       for (const auto &current_aabb: static_objects_list) {
@@ -598,6 +641,17 @@ int main(int argc, char *argv[]) {
             //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
          }
 
+         else if (type == "Cube2") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, CUBE2);
+            DrawVirtualObject("Cube2");
+            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+         } else if (type == "Cube3") {
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, CUBE3);
+            DrawVirtualObject("Cube3");
+            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
+         }
          ++i;
       }
 
@@ -615,8 +669,7 @@ int main(int argc, char *argv[]) {
       if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
          shark_mode = true;
       }
-      if (shark_mode)
-      {
+      if (shark_mode) {
          model = aabb_shark.get_model();
 
          glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -645,34 +698,16 @@ int main(int argc, char *argv[]) {
 
          DrawVirtualObject("Object_BlueTaT.jpg");
 
-         animateAABB(aabb_fish1,
-            glm::vec3(-80.0f, 2.0f, 0.0f),
-            glm::vec3(-70.0f, 2.0f, 2.0f),
-            glm::vec3(-90.0f, 2.0f, -2.0f),
-            glm::vec3(-80.0f, 2.0f, 0.0f),
-            speed,
-            current_time);
+         animateAABB(aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
+                     glm::vec3(-80.0f, 2.0f, 0.0f), speed, current_time);
 
-         animateAABB(aabb_fish2,
-            glm::vec3(-80.0f, 0.0f, 0.0f),
-            glm::vec3(-90.0f, 2.0f, -2.0f),
-            glm::vec3(-70.0f, 2.0f, 2.0f),
-            glm::vec3(-80.0f, 0.0f, 0.0f),
-            speed,
-            current_time);
+         animateAABB(aabb_fish2, glm::vec3(-80.0f, 0.0f, 0.0f), glm::vec3(-90.0f, 2.0f, -2.0f), glm::vec3(-70.0f, 2.0f, 2.0f),
+                     glm::vec3(-80.0f, 0.0f, 0.0f), speed, current_time);
 
-         animateAABB(aabb_fish3,
-            glm::vec3(-80.0f, -2.0f, 0.0f),
-            glm::vec3(-60.0f, 2.0f, 3.0f),
-            glm::vec3(-100.0f, 2.0f, -3.0f),
-            glm::vec3(-80.0f, -2.0f, 0.0f),
-            speed,
-            current_time);
+         animateAABB(aabb_fish3, glm::vec3(-80.0f, -2.0f, 0.0f), glm::vec3(-60.0f, 2.0f, 3.0f), glm::vec3(-100.0f, 2.0f, -3.0f),
+                     glm::vec3(-80.0f, -2.0f, 0.0f), speed, current_time);
       }
 
-      TextRendering_ShowEulerAngles(window);
-
-      TextRendering_ShowProjection(window);
 
       TextRendering_ShowFramesPerSecond(window);
 
@@ -686,11 +721,10 @@ int main(int argc, char *argv[]) {
    return 0;
 }
 
-glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
-{
-   float u = 1 - t;
-   float tt = t * t;
-   float uu = u * u;
+glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+   float u   = 1 - t;
+   float tt  = t * t;
+   float uu  = u * u;
    float uuu = uu * u;
    float ttt = tt * t;
 
@@ -703,17 +737,17 @@ glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3
 }
 
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
-    // Use modulo to loop the animation over the duration of the Bezier curve
-    float t = fmod(elapsedTime * speed, 1.0f); // t will keep looping from 0 to 1
+   // Use modulo to loop the animation over the duration of the Bezier curve
+   float t = fmod(elapsedTime * speed, 1.0f); // t will keep looping from 0 to 1
 
-    glm::vec3 newPosition = Bezier(t, p0, p1, p2, p3);
+   glm::vec3 newPosition = Bezier(t, p0, p1, p2, p3);
 
-    // Update the AABB position using the calculated Bezier curve point
-    glm::vec3 bbox_min_local = box.get_min();
-    glm::vec3 bbox_max_local = box.get_max();
-    glm::mat4 newModelMatrix = glm::translate(glm::mat4(1.0f), newPosition);
+   // Update the AABB position using the calculated Bezier curve point
+   glm::vec3 bbox_min_local = box.get_min();
+   glm::vec3 bbox_max_local = box.get_max();
+   glm::mat4 newModelMatrix = glm::translate(glm::mat4(1.0f), newPosition);
 
-    box.update_aabb(newModelMatrix, bbox_min_local, bbox_max_local);
+   box.update_aabb(newModelMatrix, bbox_min_local, bbox_max_local);
 }
 
 void LoadTextureImage(const char *filename) {
@@ -798,6 +832,9 @@ void LoadShadersFromFiles() {
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark0"), 2);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark1"), 3);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 4);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 5);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 6);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Wall"), 7);
    glUseProgram(0);
 }
 
