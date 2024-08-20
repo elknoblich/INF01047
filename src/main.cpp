@@ -160,6 +160,9 @@ glm::vec4 g_camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Ponto "l"
 glm::vec4 g_camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
 glm::vec4 g_camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 glm::vec4 g_camera_position_c  = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
+std::map<AABB *, bool> is_eated;
+std::map<AABB *, bool> is_eatable;
+std::list<AABB *> fish_list;
 int main(int argc, char *argv[]) {
 
    int success = glfwInit();
@@ -286,9 +289,6 @@ int main(int argc, char *argv[]) {
    shark_p = &aabb_shark;
 
    /*******************FISH===FISH*****************/ int fish_id = 0;
-   std::map<AABB *, bool> is_eated;
-   std::map<AABB *, bool> is_eatable;
-   std::list<AABB *> fish_list;
    model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB *aabb_fish1 =
        new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
@@ -355,15 +355,6 @@ int main(int argc, char *argv[]) {
 
          g_camera_view_vector = glm::vec4(x, -y, z, 0.0f);
 
-         for (const auto &current_aabb: fish_list) {
-
-            if (is_eatable[current_aabb] && g_LeftMouseButtonPressed) {
-               is_eated[current_aabb] = true;
-
-               aabb_shark.update_aabb(aabb_shark.get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
-            }
-         }
 
       } else if (!g_is_free_cam) {
 
@@ -970,16 +961,24 @@ void FramebufferSizeCallback(GLFWwindow *window, int width, int height) {
 double g_LastCursorPosX, g_LastCursorPosY;
 
 void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 
+   if (g_is_free_cam && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+
+      for (const auto &current_aabb: fish_list) {
+
+         if (is_eatable[current_aabb] && !is_eated[current_aabb]) {
+
+            is_eated[current_aabb] = true;
+            shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                 g_VirtualScene["Object_TexMap_0"].bbox_max);
+         }
+      }
       glfwGetCursorPos(window, &g_LastCursorPosX, &g_LastCursorPosY);
       g_LeftMouseButtonPressed = true;
-      g_LeftMouseButtonClicked = true;
    }
    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 
       g_LeftMouseButtonPressed = false;
-      g_LeftMouseButtonClicked = false;
    }
    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 
