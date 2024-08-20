@@ -106,7 +106,6 @@ void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
-
 void draw_shark();
 void draw_fishes();
 void draw_objects();
@@ -321,7 +320,7 @@ int main(int argc, char *argv[]) {
    shark_collision_map[aabb_wall_1] = false;
    ++current_sobj_id;
 
-   seaweeds_models.push_back(Matrix_Translate(-80.0f, -10.0f, 0.0f));
+   seaweeds_models.push_back(Matrix_Translate(-80.0f, -9.0f, 0.0f));
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 

@@ -12,6 +12,7 @@ in vec4 position_model;
 
 // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
+in vec4 v_color;
 
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
@@ -156,6 +157,9 @@ void main()
 
     if(object_id == SHARK){
         color.rgb = lambert_diffuse_term;
+    }
+    else if(object_id == SEAWEED0){
+        color = v_color;
     }
     else{
         color.rgb = lambert_diffuse_term + ambient_term + blinn_phong_specular_term;

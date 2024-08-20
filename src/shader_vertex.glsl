@@ -7,11 +7,13 @@ layout (location = 2) in vec2 texture_coefficients;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform int object_id;
 
 out vec4 position_world;
 out vec4 position_model;
 out vec4 normal;
 out vec2 texcoords;
+out vec4 v_color;
 
 #define CUBE   0
 #define SHARK  1
@@ -20,6 +22,7 @@ out vec2 texcoords;
 #define CUBE3  4
 #define SEAWEED0 5
 
+uniform sampler2D Seaweed0;
 void main()
 {
 
@@ -33,5 +36,19 @@ void main()
     normal.w = 0.0;
 
     texcoords = texture_coefficients;
+
+    if (object_id == SEAWEED0) {
+
+        vec4 camera_position = inverse(view) * vec4(0.0, 0.0, 0.0, 1.0);
+        vec4 l = normalize(camera_position - position_world);
+
+        vec4 n = normalize(normal);
+
+        vec3 I = vec3(1.0, 1.0, 1.0);
+        vec3 Kd = texture(Seaweed0, texcoords).rgb;
+        vec3 lambert_diffuse_term = Kd * I * max(0, dot(n, l));
+
+        v_color = vec4(lambert_diffuse_term, 1.0);
+    }
 }
 
