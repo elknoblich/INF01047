@@ -107,6 +107,13 @@ void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
 
+void draw_shark();
+void draw_fishes();
+void draw_objects();
+void update_shark_collision_map(glm::vec4 velocity, float t_first[], float t_last[]);
+void update_fishes_eatability();
+void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity, float t_first[], float t_last[]);
+
 struct SceneObject {
    std::string name;
    size_t first_index;
@@ -160,9 +167,13 @@ glm::vec4 g_camera_lookat_l    = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Ponto "l"
 glm::vec4 g_camera_view_vector = glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // Vetor "view", sentido para onde a câmera está virada
 glm::vec4 g_camera_up_vector   = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 glm::vec4 g_camera_position_c  = glm::vec4(-0.75f, 0.75f, 0.75f, 1.0f);
+
 std::map<AABB *, bool> is_eated;
 std::map<AABB *, bool> is_eatable;
 std::list<AABB *> fish_list;
+std::map<AABB, bool> shark_collision_map;
+std::list<AABB> shark_arena_walls;
+
 int main(int argc, char *argv[]) {
 
    int success = glfwInit();
@@ -257,8 +268,6 @@ int main(int argc, char *argv[]) {
 
    float prev_time = (float)glfwGetTime();
    float speed     = 0.5f;
-   std::map<AABB, bool> cam_collision_map;
-   std::list<AABB> static_objects_list;
 
 
    glm::mat4 model = Matrix_Identity();
@@ -294,10 +303,7 @@ int main(int argc, char *argv[]) {
 
    /**Static objects**/
    int current_sobj_id = 0;
-   std::map<AABB, bool> shark_collision_map;
-
-   std::list<AABB> shark_arena_walls;
-   model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
+   model               = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
    AABB aabb_wall_1(g_VirtualScene["Cube2"].bbox_min, g_VirtualScene["Cube2"].bbox_max, model, current_sobj_id, "Cube2");
    shark_arena_walls.push_back(aabb_wall_1);
    shark_collision_map[aabb_wall_1] = false;
@@ -331,81 +337,11 @@ int main(int argc, char *argv[]) {
 
 
       if (g_is_free_cam) {
-
          g_camera_view_vector = glm::vec4(x, -y, z, 0.0f);
-
-
       } else if (!g_is_free_cam) {
-
-         g_camera_lookat_l    = aabb_shark.get_center_point();
-         g_camera_position_c  = glm::vec4(10.0f, 0.0f, 0.0f, 0.0f) + g_camera_lookat_l;
-         g_camera_view_vector = g_camera_lookat_l - g_camera_position_c;
-
-         float current_time = (float)glfwGetTime();
-         float delta_t      = current_time - prev_time;
-         prev_time          = current_time;
-
-
-         const float ROTATION_CONST      = 0.523599;
-         bool is_rotated                 = false;
-         glm::mat4 shark_rotation_matrix = Matrix_Identity();
-
-         if (g_A_pressed) {
-            shark_rotation = ROTATION_CONST * delta_t;
-            is_rotated     = true;
-         }
-
-         if (g_D_pressed) {
-            shark_rotation = -ROTATION_CONST * delta_t;
-            is_rotated     = true;
-         }
-
-
-         if (is_rotated) {
-            shark_rotation_matrix = Matrix_Rotate_Y(shark_rotation);
-            aabb_shark.update_aabb(aabb_shark.get_model() * shark_rotation_matrix, g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                   g_VirtualScene["Object_TexMap_0"].bbox_max);
-         }
-
-
-         glm::vec4 forward_direction = glm::vec4(-aabb_shark.get_model()[0].x, -aabb_shark.get_model()[0].y, -aabb_shark.get_model()[0].z, 0.0f);
-         forward_direction           = forward_direction / norm(forward_direction);
-         if (g_W_pressed)
-            velocity += forward_direction;
-
-         if (g_LCTRL_pressed)
-            velocity -= g_camera_up_vector;
-
-         if (g_LSHIFT_pressed)
-            velocity += g_camera_up_vector;
-
-         if (velocity.x != 0 || velocity.z != 0)
-            velocity = velocity / norm(velocity);
-
-         int count = 0;
-         for (const auto &current_aabb: shark_arena_walls) {
-            if (shark_collision_map[current_aabb]) {
-               // Adjust velocity based on the time to collision
-               velocity += velocity * t_first[count] * delta_t;
-
-               velocity = g_camera_up_vector;
-
-               velocity = velocity * speed * 5.0f * delta_t;
-               glm::mat4 shark_translation =
-                   Matrix_Translate(velocity.x * (1.0f - t_first[count]), velocity.y * (1.0f - t_first[count]), velocity.z * (1.0f - t_first[count]));
-
-               aabb_shark.update_aabb(shark_translation * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
-
-            } else {
-               velocity                    = velocity * speed * 5.0f * delta_t;
-               glm::mat4 shark_translation = Matrix_Translate(velocity.x, velocity.y, velocity.z);
-
-               aabb_shark.update_aabb(shark_translation * aabb_shark.get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
-            }
-         }
+         shark_movement(prev_time, shark_rotation, velocity, t_first, t_last);
       }
+
       glm::mat4 view = Matrix_Camera_View(g_camera_position_c, g_camera_view_vector, g_camera_up_vector);
 
       glm::mat4 projection;
@@ -427,53 +363,12 @@ int main(int argc, char *argv[]) {
 #define CUBE2 3
 #define CUBE3 4
 
-      int i = 0;
+      draw_objects();
+      draw_shark();
+      draw_fishes();
 
-      for (const auto &current_aabb: shark_arena_walls) {
-
-         glm::mat4 current_model = current_aabb.get_model();
-         std::string type        = current_aabb.get_type();
-
-
-         if (type == "Cube2") {
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, CUBE2);
-            DrawVirtualObject("Cube2");
-            shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(aabb_shark, current_aabb, velocity, t_first[i], t_last[i]);
-         }
-         ++i;
-      }
-
-      if (!g_is_free_cam) {
-         model = aabb_shark.get_model();
-
-         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-         glUniform1i(g_object_id_uniform, SHARK);
-
-         DrawVirtualObject("Object_TexMap_0");
-      }
-
-
-      SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
-
-      for (const auto &current_aabb: fish_list) {
-
-         glm::mat4 current_model = current_aabb->get_model();
-         std::string type        = current_aabb->get_type();
-
-         if (is_eated[current_aabb])
-            continue;
-
-         if (type == "Object_BlueTaT.jpg") {
-
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, FISH);
-            DrawVirtualObject("Object_BlueTaT.jpg");
-
-            is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
-                ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb);
-         }
-      }
+      update_fishes_eatability();
+      update_shark_collision_map(velocity, t_first, t_last);
 
 
       animateAABB(*aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
@@ -496,6 +391,74 @@ int main(int argc, char *argv[]) {
    glfwTerminate();
 
    return 0;
+}
+void draw_shark() {
+   if (!g_is_free_cam) {
+      glm::mat4 model = shark_p->get_model();
+
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+      glUniform1i(g_object_id_uniform, SHARK);
+
+      DrawVirtualObject("Object_TexMap_0");
+   }
+}
+
+void draw_objects() {
+
+   for (const auto &current_aabb: shark_arena_walls) {
+
+      glm::mat4 current_model = current_aabb.get_model();
+      std::string type        = current_aabb.get_type();
+
+
+      if (type == "Cube2") {
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+         glUniform1i(g_object_id_uniform, CUBE2);
+         DrawVirtualObject("Cube2");
+      }
+   }
+}
+
+void draw_fishes() {
+   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
+
+   for (const auto &current_aabb: fish_list) {
+
+      glm::mat4 current_model = current_aabb->get_model();
+      std::string type        = current_aabb->get_type();
+
+      if (is_eated[current_aabb])
+         continue;
+
+      if (type == "Object_BlueTaT.jpg") {
+
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+         glUniform1i(g_object_id_uniform, FISH);
+         DrawVirtualObject("Object_BlueTaT.jpg");
+      }
+   }
+}
+
+void update_fishes_eatability() {
+
+   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
+
+   for (const auto &current_aabb: fish_list) {
+
+      if (is_eated[current_aabb])
+         continue;
+
+      is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
+          ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb);
+   }
+}
+
+void update_shark_collision_map(glm::vec4 velocity, float t_first[], float t_last[]) {
+   int i = 0;
+   for (const auto &current_aabb: shark_arena_walls) {
+      shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(*shark_p, current_aabb, velocity, t_first[i], t_last[i]);
+      ++i;
+   }
 }
 
 glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
@@ -523,7 +486,77 @@ void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 
 
    box.update_aabb(new_model_matrix, g_VirtualScene[box.get_type()].bbox_min, g_VirtualScene[box.get_type()].bbox_max);
 }
+void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity, float t_first[], float t_last[]) {
+   g_camera_lookat_l    = shark_p->get_center_point();
+   g_camera_position_c  = glm::vec4(10.0f, 0.0f, 0.0f, 0.0f) + g_camera_lookat_l;
+   g_camera_view_vector = g_camera_lookat_l - g_camera_position_c;
 
+   float current_time = (float)glfwGetTime();
+   float delta_t      = current_time - prev_time;
+   prev_time          = current_time;
+
+
+   const float ROTATION_CONST      = 0.523599;
+   bool is_rotated                 = false;
+   glm::mat4 shark_rotation_matrix = Matrix_Identity();
+
+   if (g_A_pressed) {
+      shark_rotation = ROTATION_CONST * delta_t;
+      is_rotated     = true;
+   }
+
+   if (g_D_pressed) {
+      shark_rotation = -ROTATION_CONST * delta_t;
+      is_rotated     = true;
+   }
+
+
+   if (is_rotated) {
+      shark_rotation_matrix = Matrix_Rotate_Y(shark_rotation);
+      shark_p->update_aabb(shark_p->get_model() * shark_rotation_matrix, g_VirtualScene["Object_TexMap_0"].bbox_min,
+                           g_VirtualScene["Object_TexMap_0"].bbox_max);
+   }
+
+
+   glm::vec4 forward_direction = glm::vec4(-shark_p->get_model()[0].x, -shark_p->get_model()[0].y, -shark_p->get_model()[0].z, 0.0f);
+   forward_direction           = forward_direction / norm(forward_direction);
+   if (g_W_pressed)
+      velocity += forward_direction;
+
+   if (g_LCTRL_pressed)
+      velocity -= g_camera_up_vector;
+
+   if (g_LSHIFT_pressed)
+      velocity += g_camera_up_vector;
+
+   if (velocity.x != 0 || velocity.z != 0)
+      velocity = velocity / norm(velocity);
+
+   int count   = 0;
+   float speed = 0.5;
+   for (const auto &current_aabb: shark_arena_walls) {
+      if (shark_collision_map[current_aabb]) {
+         // Adjust velocity based on the time to collision
+         velocity += velocity * t_first[count] * delta_t;
+
+         velocity = g_camera_up_vector;
+
+         velocity = velocity * speed * 5.0f * delta_t;
+         glm::mat4 shark_translation =
+             Matrix_Translate(velocity.x * (1.0f - t_first[count]), velocity.y * (1.0f - t_first[count]), velocity.z * (1.0f - t_first[count]));
+
+         shark_p->update_aabb(shark_translation * shark_p->get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                              g_VirtualScene["Object_TexMap_0"].bbox_max);
+
+      } else {
+         velocity                    = velocity * speed * 5.0f * delta_t;
+         glm::mat4 shark_translation = Matrix_Translate(velocity.x, velocity.y, velocity.z);
+
+         shark_p->update_aabb(shark_translation * shark_p->get_model(), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                              g_VirtualScene["Object_TexMap_0"].bbox_max);
+      }
+   }
+}
 void LoadTextureImage(const char *filename) {
    printf("Carregando imagem \"%s\"... ", filename);
 
