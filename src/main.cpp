@@ -173,7 +173,14 @@ std::map<AABB *, bool> is_eatable;
 std::list<AABB *> fish_list;
 std::map<AABB, bool> shark_collision_map;
 std::list<AABB> shark_arena_walls;
+std::list<glm::mat4> seaweeds_models;
 
+#define CUBE     0
+#define SHARK    1
+#define FISH     2
+#define CUBE2    3
+#define CUBE3    4
+#define SEAWEED0 5
 int main(int argc, char *argv[]) {
 
    int success = glfwInit();
@@ -231,6 +238,7 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/texture_S.jpg");
    LoadTextureImage("../../data/fish.jpg");
    LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
+   LoadTextureImage("../../data/seaweed0.jpeg");
 
 
    ObjModel cubemodel("../../data/cube.obj");
@@ -252,6 +260,10 @@ int main(int argc, char *argv[]) {
    ObjModel fishmodel("../../data/fish.obj");
    ComputeNormals(&fishmodel);
    BuildTrianglesAndAddToVirtualScene(&fishmodel);
+
+   ObjModel seaweed0model("../../data/seaweed0.obj");
+   ComputeNormals(&seaweed0model);
+   BuildTrianglesAndAddToVirtualScene(&seaweed0model);
 
    if (argc > 1) {
       ObjModel model(argv[1]);
@@ -309,7 +321,7 @@ int main(int argc, char *argv[]) {
    shark_collision_map[aabb_wall_1] = false;
    ++current_sobj_id;
 
-
+   seaweeds_models.push_back(Matrix_Translate(-80.0f, -10.0f, 0.0f));
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 
@@ -357,11 +369,6 @@ int main(int argc, char *argv[]) {
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-#define CUBE  0
-#define SHARK 1
-#define FISH  2
-#define CUBE2 3
-#define CUBE3 4
 
       draw_objects();
       draw_shark();
@@ -404,6 +411,15 @@ void draw_shark() {
 }
 
 void draw_objects() {
+   int i = 0;
+   for (const auto &current_model: seaweeds_models) {
+
+
+      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+      glUniform1i(g_object_id_uniform, SEAWEED0);
+      DrawVirtualObject("seaweed0");
+      ++i;
+   }
 
    for (const auto &current_aabb: shark_arena_walls) {
 
@@ -639,6 +655,8 @@ void LoadShadersFromFiles() {
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 2);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 3);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 4);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Seaweed0"), 5);
+
    glUseProgram(0);
 }
 

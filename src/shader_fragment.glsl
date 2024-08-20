@@ -24,6 +24,7 @@ uniform mat4 projection;
 #define FISH   2
 #define CUBE2  3
 #define CUBE3  4
+#define SEAWEED0 5
 
 uniform int object_id;
 
@@ -37,6 +38,7 @@ uniform sampler2D Shark1;
 uniform sampler2D Shark2;
 uniform sampler2D Fish;
 uniform sampler2D Sand;
+uniform sampler2D Seaweed0;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
