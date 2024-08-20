@@ -272,11 +272,8 @@ int main(int argc, char *argv[]) {
    glCullFace(GL_BACK);
    glFrontFace(GL_CCW);
 
-   float prev_time            = (float)glfwGetTime();
-   float speed                = 0.5f;
-   glm::vec4 camera_aabb_size = glm::vec4(0.8f, 0.9f, 0.8f, 0.0f);
-   AABB cam_aabb(g_camera_position_c, camera_aabb_size, 0);                                     // Colisão com objetos
-   SPHERE interaction_sphere(g_camera_position_c, 2.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Interação com objetos
+   float prev_time = (float)glfwGetTime();
+   float speed     = 0.5f;
    std::map<AABB, bool> cam_collision_map;
    std::list<AABB> static_objects_list;
 
@@ -289,32 +286,32 @@ int main(int argc, char *argv[]) {
 
    /*******************FISH===FISH*****************/
    int fish_id = 0;
-   std::map<AABB, bool> is_eated;
-   std::map<AABB, bool> is_eatable;
-   std::list<AABB> fish_list;
+   std::map<AABB *, bool> is_eated;
+   std::map<AABB *, bool> is_eatable;
+   std::list<AABB *> fish_list;
 
    model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish1] = false;
-   is_eated[aabb_fish1]   = false;
-   fish_list.push_back(aabb_fish1);
+   is_eatable[&aabb_fish1] = false;
+   is_eated[&aabb_fish1]   = false;
+   fish_list.push_back(&aabb_fish1);
    ++fish_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish2] = false;
-   is_eated[aabb_fish2]   = false;
-   fish_list.push_back(aabb_fish2);
+   is_eatable[&aabb_fish2] = false;
+   is_eated[&aabb_fish2]   = false;
+   fish_list.push_back(&aabb_fish2);
    ++fish_id;
 
    model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
    AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish3] = false;
-   is_eated[aabb_fish3]   = false;
-   fish_list.push_back(aabb_fish3);
+   is_eatable[&aabb_fish3] = false;
+   is_eated[&aabb_fish3]   = false;
+   fish_list.push_back(&aabb_fish3);
    ++fish_id;
 
    /**Static objects**/
@@ -463,7 +460,6 @@ int main(int argc, char *argv[]) {
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-#define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
 #define CUBE   3
@@ -511,30 +507,36 @@ int main(int argc, char *argv[]) {
          DrawVirtualObject("Object_TexMap_0");
       }
 
+      float tmin;
+      glm::vec4 intersec_point;
+      SPHERE interaction_sphere(g_camera_position_c, 2.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+      for (const auto &current_aabb: fish_list) {
 
-      //float tmin;
-      //glm::vec4 intersec_point;
+         glm::mat4 current_model = current_aabb->get_model();
+         std::string type        = current_aabb->get_type();
+
+         if (is_eated[current_aabb])
+            continue;
+
+         if (type == "Object_BlueTaT.jpg") {
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+            glUniform1i(g_object_id_uniform, FISH);
+            DrawVirtualObject("Object_BlueTaT.jpg");
+
+            is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
+                ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb, tmin, intersec_point);
+         }
+
+         ++i;
+      }
+
       //bool button_ray_intersec =
       //  ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), aabb_button, tmin, intersec_point);
 
       //if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
       //}
 
-
-      model = aabb_fish1.get_model();
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, FISH);
-      DrawVirtualObject("Object_BlueTaT.jpg");
-
-      model = aabb_fish2.get_model();
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, FISH);
-      DrawVirtualObject("Object_BlueTaT.jpg");
-
-      model = aabb_fish3.get_model();
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, FISH);
-      DrawVirtualObject("Object_BlueTaT.jpg");
 
       animateAABB(aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
                   glm::vec3(-80.0f, 2.0f, 0.0f), speed, current_time);
