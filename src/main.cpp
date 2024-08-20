@@ -280,42 +280,47 @@ int main(int argc, char *argv[]) {
    std::map<AABB, bool> cam_collision_map;
    std::list<AABB> static_objects_list;
 
-   int current_sobj_id = 0;
 
    glm::mat4 model = Matrix_Identity();
 
    model = Matrix_Translate(-80.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, current_sobj_id, "Object_TexMap_0");
+   AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, -1, "Object_TexMap_0");
    shark_p = &aabb_shark;
-   ++current_sobj_id;
+
+   /*******************FISH===FISH*****************/
+   int fish_id = 0;
+   std::map<AABB, bool> is_eated;
+   std::map<AABB, bool> is_eatable;
+   std::list<AABB> fish_list;
 
    model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   ++current_sobj_id;
+   is_eatable[aabb_fish1] = false;
+   is_eated[aabb_fish1]   = false;
+   fish_list.push_back(aabb_fish1);
+   ++fish_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   ++current_sobj_id;
+   is_eatable[aabb_fish2] = false;
+   is_eated[aabb_fish2]   = false;
+   fish_list.push_back(aabb_fish2);
+   ++fish_id;
 
    model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, current_sobj_id,
+   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                    "Object_BlueTaT.jpg");
-   ++current_sobj_id;
+   is_eatable[aabb_fish3] = false;
+   is_eated[aabb_fish3]   = false;
+   fish_list.push_back(aabb_fish3);
+   ++fish_id;
 
-   //FP arena
-
-
-   //Buttons
-   model = Matrix_Translate(-8.0f, 0.7f, 0.0f) * Matrix_Rotate_Y(3.1415 / 2.0f) * Matrix_Scale(0.001f, 0.001f, 0.001f);
-   AABB aabb_button(g_VirtualScene["object_0"].bbox_min, g_VirtualScene["object_0"].bbox_max, model, current_sobj_id, "object_0");
-   static_objects_list.push_back(aabb_button);
-   cam_collision_map[aabb_button] = false;
-
-
+   /**Static objects**/
+   int current_sobj_id = 0;
    std::map<AABB, bool> shark_collision_map;
-   //Shark Arena Walls
+
    std::list<AABB> shark_arena_walls;
    model = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
    AABB aabb_wall_1(g_VirtualScene["Cube2"].bbox_min, g_VirtualScene["Cube2"].bbox_max, model, current_sobj_id, "Cube2");
@@ -366,8 +371,6 @@ int main(int argc, char *argv[]) {
 
       glm::vec4 velocity = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
-      glm::vec4 forward_direction = glm::vec4(-aabb_shark.get_model()[0].x, -aabb_shark.get_model()[0].y, -aabb_shark.get_model()[0].z, 0.0f);
-      forward_direction           = forward_direction / norm(forward_direction);
 
       if (g_is_free_cam) {
 
@@ -407,21 +410,20 @@ int main(int argc, char *argv[]) {
          }
 
 
-         if (g_W_pressed) {
+         glm::vec4 forward_direction = glm::vec4(-aabb_shark.get_model()[0].x, -aabb_shark.get_model()[0].y, -aabb_shark.get_model()[0].z, 0.0f);
+         forward_direction           = forward_direction / norm(forward_direction);
+         if (g_W_pressed)
             velocity += forward_direction;
-         }
 
-         if (g_LCTRL_pressed) {
+         if (g_LCTRL_pressed)
             velocity -= g_camera_up_vector;
-         }
 
-         if (g_LSHIFT_pressed) {
+         if (g_LSHIFT_pressed)
             velocity += g_camera_up_vector;
-         }
 
-         if (velocity.x != 0 || velocity.z != 0) {
+         if (velocity.x != 0 || velocity.z != 0)
             velocity = velocity / norm(velocity);
-         }
+
          int count = 0;
          for (const auto &current_aabb: shark_arena_walls) {
             if (shark_collision_map[current_aabb]) {
@@ -474,28 +476,6 @@ int main(int argc, char *argv[]) {
 
       int i = 0;
 
-      for (const auto &current_aabb: static_objects_list) {
-         glm::mat4 current_model = current_aabb.get_model();
-         std::string type        = current_aabb.get_type();
-
-
-         if (type == "Cube") {
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, CUBE);
-            DrawVirtualObject("Cube");
-            cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
-
-         } else if (type == "object_0") {
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, BUTTON);
-            DrawVirtualObject("object_0");
-            cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
-         }
-
-         ++i;
-      }
-
-      i = 0;
       for (const auto &current_aabb: shark_arena_walls) {
 
          glm::mat4 current_model = current_aabb.get_model();
@@ -522,20 +502,6 @@ int main(int argc, char *argv[]) {
          ++i;
       }
 
-
-      model = Matrix_Translate(0.0f, -1.1f, 0.0f) * Matrix_Scale(10.0f, 1.0f, 10.0f);
-      glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-      glUniform1i(g_object_id_uniform, PLANE);
-      DrawVirtualObject("the_plane");
-
-
-      float tmin;
-      glm::vec4 intersec_point;
-      bool button_ray_intersec =
-          ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), aabb_button, tmin, intersec_point);
-
-      if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
-      }
       if (!g_is_free_cam) {
          model = aabb_shark.get_model();
 
@@ -544,6 +510,16 @@ int main(int argc, char *argv[]) {
 
          DrawVirtualObject("Object_TexMap_0");
       }
+
+
+      //float tmin;
+      //glm::vec4 intersec_point;
+      //bool button_ray_intersec =
+      //  ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), aabb_button, tmin, intersec_point);
+
+      //if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
+      //}
+
 
       model = aabb_fish1.get_model();
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
