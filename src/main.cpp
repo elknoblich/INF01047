@@ -215,29 +215,12 @@ int main(int argc, char *argv[]) {
 
    LoadShadersFromFiles();
 
-   LoadTextureImage("../../data/grassy_cobblestone_diff_4k.jpg");
-   LoadTextureImage("../../data/grama_text.jpg");
-   //Shark Textures:
    LoadTextureImage("../../data/texture.jpg");
    LoadTextureImage("../../data/texture_N.jpg");
    LoadTextureImage("../../data/texture_S.jpg");
    LoadTextureImage("../../data/fish.jpg");
    LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
-   LoadTextureImage("../../data/coral_stone_wall_diff_4k.jpg");
-   LoadTextureImage("../../data/button.jpg");
 
-   // Obj Load:
-   ObjModel spheremodel("../../data/sphere.obj");
-   ComputeNormals(&spheremodel);
-   BuildTrianglesAndAddToVirtualScene(&spheremodel);
-
-   ObjModel bunnymodel("../../data/bunny.obj");
-   ComputeNormals(&bunnymodel);
-   BuildTrianglesAndAddToVirtualScene(&bunnymodel);
-
-   ObjModel planemodel("../../data/plane.obj");
-   ComputeNormals(&planemodel);
-   BuildTrianglesAndAddToVirtualScene(&planemodel);
 
    ObjModel cubemodel("../../data/cube.obj");
    ComputeNormals(&cubemodel);
@@ -250,10 +233,6 @@ int main(int argc, char *argv[]) {
    ObjModel cube3model("../../data/cube3.obj");
    ComputeNormals(&cube3model);
    BuildTrianglesAndAddToVirtualScene(&cube3model);
-
-   ObjModel buttonmodel("../../data/model.obj");
-   ComputeNormals(&buttonmodel);
-   BuildTrianglesAndAddToVirtualScene(&buttonmodel);
 
    ObjModel sharkmodel("../../data/shark.obj");
    ComputeNormals(&sharkmodel);
@@ -442,12 +421,11 @@ int main(int argc, char *argv[]) {
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-#define CUBE   0
-#define SHARK  1
-#define GROUND 2
-#define FISH   3
-#define CUBE2  4
-#define CUBE3  5
+#define CUBE  0
+#define SHARK 1
+#define FISH  2
+#define CUBE2 3
+#define CUBE3 4
 
       int i = 0;
 
@@ -475,8 +453,6 @@ int main(int argc, char *argv[]) {
          DrawVirtualObject("Object_TexMap_0");
       }
 
-      float tmin;
-      glm::vec4 intersec_point;
 
       SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
 
@@ -495,7 +471,7 @@ int main(int argc, char *argv[]) {
             DrawVirtualObject("Object_BlueTaT.jpg");
 
             is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
-                ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb, tmin, intersec_point);
+                ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb);
          }
       }
 
@@ -537,7 +513,6 @@ glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::v
 
    return p;
 }
-
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
 
    float t = fmod(elapsedTime * speed, 1.0f);
@@ -626,15 +601,11 @@ void LoadShadersFromFiles() {
    g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
 
    glUseProgram(g_GpuProgramID);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Ground"), 0);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Grass"), 1);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark0"), 2);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark1"), 3);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 4);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 5);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 6);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Wall"), 7);
-   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Button0"), 8);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark0"), 0);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark1"), 1);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Shark2"), 2);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 3);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 4);
    glUseProgram(0);
 }
 

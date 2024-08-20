@@ -16,17 +16,6 @@ AABB::AABB(glm::vec3 bbox_min_local, glm::vec3 bbox_max_local, glm::mat4 model, 
    this->type                = type;
 };
 
-AABB::AABB(glm::vec4 center_point, glm::vec4 size, int id) {
-   glm::vec4 p1     = center_point + size;
-   glm::vec4 p2     = center_point - size;
-   this->bbox_min.x = std::fmin(p1.x, p2.x);
-   this->bbox_min.y = std::fmin(p1.y, p2.y);
-   this->bbox_min.z = std::fmin(p1.z, p2.z);
-   this->bbox_max.x = std::fmax(p1.x, p2.x);
-   this->bbox_max.y = std::fmax(p1.y, p2.y);
-   this->bbox_max.z = std::fmax(p1.z, p2.z);
-   this->id         = id;
-};
 
 bool AABB::operator<(const AABB &other) const { return id < other.id; };
 
@@ -34,16 +23,6 @@ glm::vec3 AABB::get_min() const { return bbox_min; };
 glm::vec3 AABB::get_max() const { return bbox_max; };
 glm::mat4 AABB::get_model() const { return model; };
 std::string AABB::get_type() const { return type; };
-void AABB::update_aabb(glm::vec4 center_point, glm::vec4 size) {
-   glm::vec4 p1     = center_point + size;
-   glm::vec4 p2     = center_point - size;
-   this->bbox_min.x = std::fmin(p1.x, p2.x);
-   this->bbox_min.y = std::fmin(p1.y, p2.y);
-   this->bbox_min.z = std::fmin(p1.z, p2.z);
-   this->bbox_max.x = std::fmax(p1.x, p2.x);
-   this->bbox_max.y = std::fmax(p1.y, p2.y);
-   this->bbox_max.z = std::fmax(p1.z, p2.z);
-};
 
 void AABB::update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 bbox_max_local) {
    glm::vec4 corners[8] = {
@@ -69,11 +48,13 @@ void AABB::update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 
    this->bbox_max = max_transformed;
    this->model    = new_model;
 }
+
 glm::vec4 AABB::get_center_point() {
    glm::vec4 center_point = glm::vec4((this->bbox_min.x + this->bbox_max.x) / 2, (this->bbox_min.y + this->bbox_max.y) / 2,
                                       (this->bbox_min.z + this->bbox_max.z) / 2, 1.0f);
    return center_point;
 };
+
 bool AABB_to_AABB_intersec(AABB aabb1, AABB aabb2) {
    glm::vec3 aMin = aabb1.get_min();
    glm::vec3 aMax = aabb1.get_max();
@@ -94,6 +75,7 @@ void SPHERE::update_sphere(glm::vec4 position, glm::vec4 translation_vec) {
    this->position   = position + translation_vec;
    this->position.w = 1.0f;
 }
+
 glm::vec4 SPHERE::get_center() { return position; }
 
 float SPHERE::get_radius() { return radius; }
@@ -168,8 +150,9 @@ bool moving_AABB_to_AABB_intersec(AABB moving_aabb, AABB aabb, glm::vec4 velocit
    return true;
 }
 
-bool ray_to_AABB_intersec(glm::vec4 point, glm::vec4 vector, AABB aabb, float &tmin, glm::vec4 &intersec_point) {
-   tmin       = 0.0f;
+bool ray_to_AABB_intersec(glm::vec4 point, glm::vec4 vector, AABB aabb) {
+
+   float tmin = 0.0f;
    float tmax = FLT_MAX;
 
    for (int i = 0; i < 3; i++) {

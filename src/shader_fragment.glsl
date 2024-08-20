@@ -21,10 +21,10 @@ uniform mat4 projection;
 // Identificador que define qual objeto está sendo desenhado no momento
 #define CUBE   0
 #define SHARK  1
-#define GROUND 2
-#define FISH   3
-#define CUBE2  4
-#define CUBE3  5
+#define FISH   2
+#define CUBE2  3
+#define CUBE3  4
+
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -32,15 +32,11 @@ uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
 // Variáveis para acesso das imagens de textura
-uniform sampler2D Ground;
-uniform sampler2D Grass;
 uniform sampler2D Shark0;
 uniform sampler2D Shark1;
 uniform sampler2D Shark2;
 uniform sampler2D Fish;
 uniform sampler2D Sand;
-uniform sampler2D Wall;
-uniform sampler2D Button0;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -118,26 +114,9 @@ void main()
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
-
-
-    }else if(object_id == CUBE3){
-        float minx = bbox_min.x;
-        float maxx = bbox_max.x;
-
-        float miny = bbox_min.y;
-        float maxy = bbox_max.y;
-
-        float minz = bbox_min.z;
-        float maxz = bbox_max.z;
-
-        U = (position_model.x - minx)/(maxx-minx);
-        V = (position_model.z - minz)/(maxz-minz);
-
-        Kd = texture(Wall, vec2(U,V)).rgb;
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.0,0.0);
-        q = 1.0;
-    }else{
+    }
+    else
+    {
 
         Kd = vec3(0.0,0.0,0.0);
         Ks = vec3(0.0,0.0,0.0);
