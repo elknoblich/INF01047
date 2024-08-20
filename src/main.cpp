@@ -112,6 +112,8 @@ void draw_objects();
 void update_shark_collision_map(glm::vec4 velocity, float t_first[], float t_last[]);
 void update_fishes_eatability();
 void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity, float t_first[], float t_last[]);
+void create_seaweed_models();
+void create_fishes();
 
 struct SceneObject {
    std::string name;
@@ -173,13 +175,15 @@ std::list<AABB *> fish_list;
 std::map<AABB, bool> shark_collision_map;
 std::list<AABB> shark_arena_walls;
 std::list<glm::mat4> seaweeds_models;
-
+float s_speed = 0.5f;
 #define CUBE     0
 #define SHARK    1
 #define FISH     2
 #define CUBE2    3
 #define CUBE3    4
 #define SEAWEED0 5
+#define SEAWEED1 6
+
 int main(int argc, char *argv[]) {
 
    int success = glfwInit();
@@ -238,7 +242,7 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/fish.jpg");
    LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
    LoadTextureImage("../../data/seaweed0.jpeg");
-
+   LoadTextureImage("../../data/seaweed1.png");
 
    ObjModel cubemodel("../../data/cube.obj");
    ComputeNormals(&cubemodel);
@@ -264,6 +268,10 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&seaweed0model);
    BuildTrianglesAndAddToVirtualScene(&seaweed0model);
 
+   ObjModel seaweed1model("../../data/seaweed1.obj");
+   ComputeNormals(&seaweed1model);
+   BuildTrianglesAndAddToVirtualScene(&seaweed1model);
+
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -287,31 +295,8 @@ int main(int argc, char *argv[]) {
    AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, -1, "Object_TexMap_0");
    shark_p = &aabb_shark;
 
-   /*******************FISH===FISH*****************/ int fish_id = 0;
-   model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB *aabb_fish1 =
-       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish1] = false;
-   is_eated[aabb_fish1]   = false;
-   fish_list.push_back(aabb_fish1);
-   ++fish_id;
-
-   model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB *aabb_fish2 =
-       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish2] = false;
-   is_eated[aabb_fish2]   = false;
-   fish_list.push_back(aabb_fish2);
-   ++fish_id;
-
-   model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB *aabb_fish3 =
-       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
-   is_eatable[aabb_fish3] = false;
-   is_eated[aabb_fish3]   = false;
-   fish_list.push_back(aabb_fish3);
-   ++fish_id;
-
+   /*******************FISH===FISH*****************/
+   create_fishes();
    /**Static objects**/
    int current_sobj_id = 0;
    model               = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
@@ -320,7 +305,7 @@ int main(int argc, char *argv[]) {
    shark_collision_map[aabb_wall_1] = false;
    ++current_sobj_id;
 
-   seaweeds_models.push_back(Matrix_Translate(-80.0f, -9.0f, 0.0f));
+   create_seaweed_models();
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
 
@@ -376,7 +361,7 @@ int main(int argc, char *argv[]) {
       update_fishes_eatability();
       update_shark_collision_map(velocity, t_first, t_last);
 
-
+      /*
       animateAABB(*aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
                   glm::vec3(-80.0f, 2.0f, 0.0f), speed, current_time);
 
@@ -384,7 +369,7 @@ int main(int argc, char *argv[]) {
                   glm::vec3(-80.0f, 0.0f, 0.0f), speed, current_time);
 
       animateAABB(*aabb_fish3, glm::vec3(-80.0f, -2.0f, 0.0f), glm::vec3(-60.0f, 2.0f, 3.0f), glm::vec3(-100.0f, 2.0f, -3.0f),
-                  glm::vec3(-80.0f, -2.0f, 0.0f), speed, current_time);
+                  glm::vec3(-80.0f, -2.0f, 0.0f), speed, current_time);*/
 
 
       TextRendering_ShowFramesPerSecond(window);
@@ -413,11 +398,17 @@ void draw_objects() {
    int i = 0;
    for (const auto &current_model: seaweeds_models) {
 
+      //  if (i == 0) {
 
       glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
       glUniform1i(g_object_id_uniform, SEAWEED0);
       DrawVirtualObject("seaweed0");
-      ++i;
+      //} else {
+      // glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+      //glUniform1i(g_object_id_uniform, SEAWEED1);
+      //DrawVirtualObject("seaweed1");
+      // }
+      // ++i;
    }
 
    for (const auto &current_aabb: shark_arena_walls) {
@@ -435,7 +426,6 @@ void draw_objects() {
 }
 
 void draw_fishes() {
-   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
 
    for (const auto &current_aabb: fish_list) {
 
@@ -456,7 +446,7 @@ void draw_fishes() {
 
 void update_fishes_eatability() {
 
-   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
+   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
    for (const auto &current_aabb: fish_list) {
 
@@ -511,7 +501,7 @@ void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity
    prev_time          = current_time;
 
 
-   const float ROTATION_CONST      = 0.523599;
+   const float ROTATION_CONST      = 0.923599;
    bool is_rotated                 = false;
    glm::mat4 shark_rotation_matrix = Matrix_Identity();
 
@@ -548,7 +538,7 @@ void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity
       velocity = velocity / norm(velocity);
 
    int count   = 0;
-   float speed = 0.5;
+   float speed = s_speed;
    for (const auto &current_aabb: shark_arena_walls) {
       if (shark_collision_map[current_aabb]) {
          // Adjust velocity based on the time to collision
@@ -655,6 +645,7 @@ void LoadShadersFromFiles() {
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Fish"), 3);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 4);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Seaweed0"), 5);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Seaweed1"), 6);
 
    glUseProgram(0);
 }
@@ -975,6 +966,7 @@ void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
             is_eated[current_aabb] = true;
             shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
                                  g_VirtualScene["Object_TexMap_0"].bbox_max);
+            s_speed += 0.2;
          }
       }
       glfwGetCursorPos(window, &g_LastCursorPosX, &g_LastCursorPosY);
@@ -1167,4 +1159,219 @@ void TextRendering_ShowFramesPerSecond(GLFWwindow *window) {
    float charwidth  = TextRendering_CharWidth(window);
 
    TextRendering_PrintString(window, buffer, 1.0f - (numchars + 1) * charwidth, 1.0f - lineheight, 1.0f);
+}
+
+void create_fishes() {
+
+   int fish_id = 0;
+
+   for (int i = 0; i < 100; ++i) {
+      float x        = -80.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (160.0f)));
+      float y        = -9.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (11.0f)));
+      float z        = -80.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (160.0f)));
+      float rotation = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2.0f * M_PI)));
+
+      glm::mat4 model = Matrix_Translate(x, y, z) * Matrix_Rotate_Y(rotation) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+      AABB *aabb_fish = new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
+                                 "Object_BlueTaT.jpg");
+
+      is_eatable[aabb_fish] = false;
+      is_eated[aabb_fish]   = false;
+      fish_list.push_back(aabb_fish);
+      ++fish_id;
+   }
+}
+void create_seaweed_models() {
+   seaweeds_models.push_back(Matrix_Translate(-45.3f, -9.0f, -23.8f));
+   seaweeds_models.push_back(Matrix_Translate(10.7f, -9.0f, -19.5f));
+   seaweeds_models.push_back(Matrix_Translate(-63.2f, -9.0f, 15.9f));
+   seaweeds_models.push_back(Matrix_Translate(25.0f, -9.0f, 28.4f));
+   seaweeds_models.push_back(Matrix_Translate(-72.8f, -9.0f, -4.1f));
+   seaweeds_models.push_back(Matrix_Translate(55.3f, -9.0f, -11.2f));
+   seaweeds_models.push_back(Matrix_Translate(-37.1f, -9.0f, 8.3f));
+   seaweeds_models.push_back(Matrix_Translate(18.5f, -9.0f, -32.6f));
+   seaweeds_models.push_back(Matrix_Translate(-22.9f, -9.0f, 22.7f));
+   seaweeds_models.push_back(Matrix_Translate(34.6f, -9.0f, 5.5f));
+   seaweeds_models.push_back(Matrix_Translate(-54.3f, -9.0f, -9.0f));
+   seaweeds_models.push_back(Matrix_Translate(60.4f, -9.0f, 37.2f));
+   seaweeds_models.push_back(Matrix_Translate(-19.4f, -9.0f, -30.5f));
+   seaweeds_models.push_back(Matrix_Translate(7.8f, -9.0f, 12.1f));
+   seaweeds_models.push_back(Matrix_Translate(-42.6f, -9.0f, -11.4f));
+   seaweeds_models.push_back(Matrix_Translate(50.7f, -9.0f, -25.6f));
+   seaweeds_models.push_back(Matrix_Translate(-66.8f, -9.0f, 31.9f));
+   seaweeds_models.push_back(Matrix_Translate(13.2f, -9.0f, -40.0f));
+   seaweeds_models.push_back(Matrix_Translate(-75.5f, -9.0f, 13.8f));
+   seaweeds_models.push_back(Matrix_Translate(39.9f, -9.0f, -2.3f));
+   seaweeds_models.push_back(Matrix_Translate(-31.0f, -9.0f, 8.9f));
+   seaweeds_models.push_back(Matrix_Translate(27.4f, -9.0f, 27.1f));
+   seaweeds_models.push_back(Matrix_Translate(-52.1f, -9.0f, -29.4f));
+   seaweeds_models.push_back(Matrix_Translate(65.0f, -9.0f, 9.8f));
+   seaweeds_models.push_back(Matrix_Translate(-20.1f, -9.0f, -16.7f));
+   seaweeds_models.push_back(Matrix_Translate(12.5f, -9.0f, -37.3f));
+   seaweeds_models.push_back(Matrix_Translate(-33.3f, -9.0f, 25.4f));
+   seaweeds_models.push_back(Matrix_Translate(48.2f, -9.0f, -18.6f));
+   seaweeds_models.push_back(Matrix_Translate(-67.9f, -9.0f, 14.4f));
+   seaweeds_models.push_back(Matrix_Translate(31.7f, -9.0f, 32.8f));
+   seaweeds_models.push_back(Matrix_Translate(-57.8f, -9.0f, -23.5f));
+   seaweeds_models.push_back(Matrix_Translate(22.6f, -9.0f, -26.9f));
+   seaweeds_models.push_back(Matrix_Translate(-43.4f, -9.0f, 29.3f));
+   seaweeds_models.push_back(Matrix_Translate(59.9f, -9.0f, 20.7f));
+   seaweeds_models.push_back(Matrix_Translate(-29.5f, -9.0f, -8.2f));
+   seaweeds_models.push_back(Matrix_Translate(8.9f, -9.0f, 33.4f));
+   seaweeds_models.push_back(Matrix_Translate(-65.7f, -9.0f, 7.9f));
+   seaweeds_models.push_back(Matrix_Translate(42.0f, -9.0f, -10.4f));
+   seaweeds_models.push_back(Matrix_Translate(-71.4f, -9.0f, -32.8f));
+   seaweeds_models.push_back(Matrix_Translate(20.4f, -9.0f, 24.2f));
+   seaweeds_models.push_back(Matrix_Translate(-48.6f, -9.0f, 14.6f));
+   seaweeds_models.push_back(Matrix_Translate(53.8f, -9.0f, 17.9f));
+   seaweeds_models.push_back(Matrix_Translate(-28.2f, -9.0f, -35.7f));
+   seaweeds_models.push_back(Matrix_Translate(9.1f, -9.0f, -1.7f));
+   seaweeds_models.push_back(Matrix_Translate(-61.3f, -9.0f, 21.6f));
+   seaweeds_models.push_back(Matrix_Translate(30.8f, -9.0f, -19.2f));
+   seaweeds_models.push_back(Matrix_Translate(-77.2f, -9.0f, -2.6f));
+   seaweeds_models.push_back(Matrix_Translate(37.5f, -9.0f, 35.3f));
+   seaweeds_models.push_back(Matrix_Translate(-40.1f, -9.0f, -30.8f));
+   seaweeds_models.push_back(Matrix_Translate(62.4f, -9.0f, 22.1f));
+   seaweeds_models.push_back(Matrix_Translate(-24.7f, -9.0f, 0.6f));
+   seaweeds_models.push_back(Matrix_Translate(21.3f, -9.0f, -11.5f));
+   seaweeds_models.push_back(Matrix_Translate(-39.8f, -9.0f, 33.3f));
+   seaweeds_models.push_back(Matrix_Translate(11.4f, -9.0f, -29.7f));
+   seaweeds_models.push_back(Matrix_Translate(-52.0f, -9.0f, -14.9f));
+   seaweeds_models.push_back(Matrix_Translate(64.3f, -9.0f, 5.2f));
+   seaweeds_models.push_back(Matrix_Translate(-27.4f, -9.0f, -40.0f));
+   seaweeds_models.push_back(Matrix_Translate(29.9f, -9.0f, 18.1f));
+   seaweeds_models.push_back(Matrix_Translate(-72.1f, -9.0f, 9.0f));
+   seaweeds_models.push_back(Matrix_Translate(56.1f, -9.0f, -30.6f));
+   seaweeds_models.push_back(Matrix_Translate(-43.6f, -9.0f, -8.8f));
+   seaweeds_models.push_back(Matrix_Translate(32.7f, -9.0f, -28.5f));
+   seaweeds_models.push_back(Matrix_Translate(-60.9f, -9.0f, 25.7f));
+   seaweeds_models.push_back(Matrix_Translate(12.0f, -9.0f, 15.9f));
+   seaweeds_models.push_back(Matrix_Translate(-66.5f, -9.0f, -27.2f));
+   seaweeds_models.push_back(Matrix_Translate(45.6f, -9.0f, 6.3f));
+   seaweeds_models.push_back(Matrix_Translate(-53.3f, -9.0f, 16.0f));
+   seaweeds_models.push_back(Matrix_Translate(41.2f, -9.0f, -5.0f));
+   seaweeds_models.push_back(Matrix_Translate(-68.1f, -9.0f, -12.1f));
+   seaweeds_models.push_back(Matrix_Translate(19.7f, -9.0f, 35.2f));
+   seaweeds_models.push_back(Matrix_Translate(-36.0f, -9.0f, -29.4f));
+   seaweeds_models.push_back(Matrix_Translate(50.5f, -9.0f, 25.0f));
+   seaweeds_models.push_back(Matrix_Translate(-71.8f, -9.0f, -4.5f));
+   seaweeds_models.push_back(Matrix_Translate(7.2f, -9.0f, -31.8f));
+   seaweeds_models.push_back(Matrix_Translate(-47.4f, -9.0f, 9.4f));
+   seaweeds_models.push_back(Matrix_Translate(54.6f, -9.0f, 32.7f));
+   seaweeds_models.push_back(Matrix_Translate(-29.3f, -9.0f, -13.9f));
+   seaweeds_models.push_back(Matrix_Translate(63.9f, -9.0f, 8.5f));
+   seaweeds_models.push_back(Matrix_Translate(-56.2f, -9.0f, 26.3f));
+   seaweeds_models.push_back(Matrix_Translate(23.5f, -9.0f, -15.4f));
+   seaweeds_models.push_back(Matrix_Translate(-34.7f, -9.0f, 12.6f));
+   seaweeds_models.push_back(Matrix_Translate(9.6f, -9.0f, -23.1f));
+   seaweeds_models.push_back(Matrix_Translate(-69.0f, -9.0f, 21.0f));
+   seaweeds_models.push_back(Matrix_Translate(16.8f, -9.0f, -32.4f));
+   seaweeds_models.push_back(Matrix_Translate(-77.5f, -9.0f, -15.2f));
+   seaweeds_models.push_back(Matrix_Translate(35.1f, -9.0f, 14.8f));
+   seaweeds_models.push_back(Matrix_Translate(-25.9f, -9.0f, -26.3f));
+   seaweeds_models.push_back(Matrix_Translate(44.8f, -9.0f, -4.7f));
+   seaweeds_models.push_back(Matrix_Translate(-61.4f, -9.0f, 11.5f));
+   seaweeds_models.push_back(Matrix_Translate(12.9f, -9.0f, 22.8f));
+   seaweeds_models.push_back(Matrix_Translate(-70.3f, -9.0f, -35.6f));
+   seaweeds_models.push_back(Matrix_Translate(28.1f, -9.0f, 37.1f));
+   seaweeds_models.push_back(Matrix_Translate(-52.8f, -9.0f, -30.9f));
+   seaweeds_models.push_back(Matrix_Translate(39.4f, -9.0f, -14.8f));
+   seaweeds_models.push_back(Matrix_Translate(-64.0f, -9.0f, 5.9f));
+   seaweeds_models.push_back(Matrix_Translate(45.1f, -9.0f, 9.7f));
+   seaweeds_models.push_back(Matrix_Translate(-37.9f, -9.0f, 28.5f));
+   seaweeds_models.push_back(Matrix_Translate(22.0f, -9.0f, -16.4f));
+   seaweeds_models.push_back(Matrix_Translate(-50.4f, -9.0f, 33.1f));
+   seaweeds_models.push_back(Matrix_Translate(58.3f, -9.0f, 25.9f));
+   seaweeds_models.push_back(Matrix_Translate(-32.5f, -9.0f, -31.0f));
+   seaweeds_models.push_back(Matrix_Translate(7.1f, -9.0f, 5.6f));
+   seaweeds_models.push_back(Matrix_Translate(-74.9f, -9.0f, -6.3f));
+   seaweeds_models.push_back(Matrix_Translate(52.7f, -9.0f, -22.4f));
+   seaweeds_models.push_back(Matrix_Translate(-61.9f, -9.0f, 19.2f));
+   seaweeds_models.push_back(Matrix_Translate(29.1f, -9.0f, 36.4f));
+   seaweeds_models.push_back(Matrix_Translate(-25.1f, -9.0f, -24.5f));
+   seaweeds_models.push_back(Matrix_Translate(32.9f, -9.0f, -7.6f));
+   seaweeds_models.push_back(Matrix_Translate(-53.6f, -9.0f, 22.4f));
+   seaweeds_models.push_back(Matrix_Translate(38.8f, -9.0f, 18.2f));
+   seaweeds_models.push_back(Matrix_Translate(-69.7f, -9.0f, -16.5f));
+   seaweeds_models.push_back(Matrix_Translate(46.2f, -9.0f, -0.2f));
+   seaweeds_models.push_back(Matrix_Translate(-78.4f, -9.0f, 29.6f));
+   seaweeds_models.push_back(Matrix_Translate(14.7f, -9.0f, -14.3f));
+   seaweeds_models.push_back(Matrix_Translate(-31.2f, -9.0f, -8.0f));
+   seaweeds_models.push_back(Matrix_Translate(50.3f, -9.0f, -12.9f));
+   seaweeds_models.push_back(Matrix_Translate(-65.0f, -9.0f, 12.3f));
+   seaweeds_models.push_back(Matrix_Translate(28.3f, -9.0f, 22.6f));
+   seaweeds_models.push_back(Matrix_Translate(-41.5f, -9.0f, -29.1f));
+   seaweeds_models.push_back(Matrix_Translate(57.4f, -9.0f, -5.6f));
+   seaweeds_models.push_back(Matrix_Translate(-72.3f, -9.0f, 26.7f));
+   seaweeds_models.push_back(Matrix_Translate(15.0f, -9.0f, -27.2f));
+   seaweeds_models.push_back(Matrix_Translate(-46.1f, -9.0f, 19.8f));
+   seaweeds_models.push_back(Matrix_Translate(36.0f, -9.0f, 7.4f));
+   seaweeds_models.push_back(Matrix_Translate(-27.8f, -9.0f, -40.0f));
+   seaweeds_models.push_back(Matrix_Translate(41.7f, -9.0f, -30.3f));
+   seaweeds_models.push_back(Matrix_Translate(-68.2f, -9.0f, 5.3f));
+   seaweeds_models.push_back(Matrix_Translate(23.6f, -9.0f, 33.7f));
+   seaweeds_models.push_back(Matrix_Translate(-29.4f, -9.0f, -19.8f));
+   seaweeds_models.push_back(Matrix_Translate(62.1f, -9.0f, 4.0f));
+   seaweeds_models.push_back(Matrix_Translate(-47.7f, -9.0f, 30.9f));
+   seaweeds_models.push_back(Matrix_Translate(53.9f, -9.0f, -27.5f));
+   seaweeds_models.push_back(Matrix_Translate(-56.4f, -9.0f, -11.3f));
+   seaweeds_models.push_back(Matrix_Translate(26.5f, -9.0f, -5.0f));
+   seaweeds_models.push_back(Matrix_Translate(-78.0f, -9.0f, 11.4f));
+   seaweeds_models.push_back(Matrix_Translate(14.2f, -9.0f, -37.6f));
+   seaweeds_models.push_back(Matrix_Translate(-40.0f, -9.0f, 25.1f));
+   seaweeds_models.push_back(Matrix_Translate(52.4f, -9.0f, -10.1f));
+   seaweeds_models.push_back(Matrix_Translate(-65.5f, -9.0f, 19.9f));
+   seaweeds_models.push_back(Matrix_Translate(32.4f, -9.0f, 2.8f));
+   seaweeds_models.push_back(Matrix_Translate(-23.0f, -9.0f, -32.3f));
+   seaweeds_models.push_back(Matrix_Translate(45.8f, -9.0f, -21.0f));
+   seaweeds_models.push_back(Matrix_Translate(-30.6f, -9.0f, 6.0f));
+   seaweeds_models.push_back(Matrix_Translate(60.7f, -9.0f, 27.0f));
+   seaweeds_models.push_back(Matrix_Translate(-67.4f, -9.0f, -35.0f));
+   seaweeds_models.push_back(Matrix_Translate(24.0f, -9.0f, -14.0f));
+   seaweeds_models.push_back(Matrix_Translate(-43.7f, -9.0f, -5.4f));
+   seaweeds_models.push_back(Matrix_Translate(33.1f, -9.0f, 36.0f));
+   seaweeds_models.push_back(Matrix_Translate(-71.2f, -9.0f, 4.7f));
+   seaweeds_models.push_back(Matrix_Translate(46.8f, -9.0f, 15.3f));
+   seaweeds_models.push_back(Matrix_Translate(-53.9f, -9.0f, -26.0f));
+   seaweeds_models.push_back(Matrix_Translate(27.7f, -9.0f, -22.1f));
+   seaweeds_models.push_back(Matrix_Translate(-29.0f, -9.0f, -9.6f));
+   seaweeds_models.push_back(Matrix_Translate(49.5f, -9.0f, 11.2f));
+   seaweeds_models.push_back(Matrix_Translate(-77.3f, -9.0f, 18.6f));
+   seaweeds_models.push_back(Matrix_Translate(18.7f, -9.0f, -27.4f));
+   seaweeds_models.push_back(Matrix_Translate(-61.1f, -9.0f, -7.9f));
+   seaweeds_models.push_back(Matrix_Translate(32.8f, -9.0f, -19.1f));
+   seaweeds_models.push_back(Matrix_Translate(-66.3f, -9.0f, 25.8f));
+   seaweeds_models.push_back(Matrix_Translate(55.4f, -9.0f, -31.6f));
+   seaweeds_models.push_back(Matrix_Translate(-36.2f, -9.0f, 12.7f));
+   seaweeds_models.push_back(Matrix_Translate(41.9f, -9.0f, 27.8f));
+   seaweeds_models.push_back(Matrix_Translate(-74.1f, -9.0f, -22.7f));
+   seaweeds_models.push_back(Matrix_Translate(21.4f, -9.0f, -11.8f));
+   seaweeds_models.push_back(Matrix_Translate(-52.9f, -9.0f, 6.9f));
+   seaweeds_models.push_back(Matrix_Translate(60.5f, -9.0f, 22.3f));
+   seaweeds_models.push_back(Matrix_Translate(-28.0f, -9.0f, -34.1f));
+   seaweeds_models.push_back(Matrix_Translate(54.0f, -9.0f, -9.3f));
+   seaweeds_models.push_back(Matrix_Translate(-41.8f, -9.0f, 18.4f));
+   seaweeds_models.push_back(Matrix_Translate(37.6f, -9.0f, -3.0f));
+   seaweeds_models.push_back(Matrix_Translate(-68.0f, -9.0f, 24.8f));
+   seaweeds_models.push_back(Matrix_Translate(48.4f, -9.0f, -13.5f));
+   seaweeds_models.push_back(Matrix_Translate(-59.3f, -9.0f, -26.8f));
+   seaweeds_models.push_back(Matrix_Translate(17.3f, -9.0f, 31.4f));
+   seaweeds_models.push_back(Matrix_Translate(-33.0f, -9.0f, -9.8f));
+   seaweeds_models.push_back(Matrix_Translate(56.7f, -9.0f, 30.1f));
+   seaweeds_models.push_back(Matrix_Translate(-25.5f, -9.0f, 12.8f));
+   seaweeds_models.push_back(Matrix_Translate(61.1f, -9.0f, -15.7f));
+   seaweeds_models.push_back(Matrix_Translate(-72.6f, -9.0f, -10.2f));
+   seaweeds_models.push_back(Matrix_Translate(10.9f, -9.0f, 20.4f));
+   seaweeds_models.push_back(Matrix_Translate(-45.7f, -9.0f, -32.9f));
+   seaweeds_models.push_back(Matrix_Translate(49.1f, -9.0f, 19.5f));
+   seaweeds_models.push_back(Matrix_Translate(-28.7f, -9.0f, 4.2f));
+   seaweeds_models.push_back(Matrix_Translate(31.3f, -9.0f, -16.1f));
+   seaweeds_models.push_back(Matrix_Translate(-60.0f, -9.0f, -5.1f));
+   seaweeds_models.push_back(Matrix_Translate(26.2f, -9.0f, 28.3f));
+   seaweeds_models.push_back(Matrix_Translate(-68.7f, -9.0f, -11.6f));
+   seaweeds_models.push_back(Matrix_Translate(58.9f, -9.0f, 14.5f));
+   seaweeds_models.push_back(Matrix_Translate(-52.4f, -9.0f, -35.0f));
+   seaweeds_models.push_back(Matrix_Translate(21.9f, -9.0f, 6.7f));
+   seaweeds_models.push_back(Matrix_Translate(-67.1f, -9.0f, 28.6f));
+   seaweeds_models.push_back(Matrix_Translate(12.6f, -9.0f, -20.9f));
 }

@@ -26,6 +26,7 @@ uniform mat4 projection;
 #define CUBE2  3
 #define CUBE3  4
 #define SEAWEED0 5
+#define SEAWEED1 6
 
 uniform int object_id;
 
@@ -40,6 +41,7 @@ uniform sampler2D Shark2;
 uniform sampler2D Fish;
 uniform sampler2D Sand;
 uniform sampler2D Seaweed0;
+uniform sampler2D Seaweed1;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -49,31 +51,18 @@ out vec4 color;
 
 void main()
 {
-    // Obtemos a posição da câmera utilizando a inversa da matriz que define o
-    // sistema de coordenadas da câmera.
     vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 camera_position = inverse(view) * origin;
 
-    // O fragmento atual é coberto por um ponto que percente à superfície de um
-    // dos objetos virtuais da cena. Este ponto, p, possui uma posição no
-    // sistema de coordenadas global (World coordinates). Esta posição é obtida
-    // através da interpolação, feita pelo rasterizador, da posição de cada
-    // vértice.
     vec4 p = position_world;
 
-    // Normal do fragmento atual, interpolada pelo rasterizador a partir das
-    // normais de cada vértice.
     vec4 n = normalize(normal);
 
-    // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    //vec4 l = normalize(vec4(0.8,1.0,0.0,0.0));
     vec4 l = normalize(camera_position - p);
 
-    // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
     vec4 r = normalize(-l + 2*n*(dot(n,l)));
     vec4 h = normalize(v+l);
-    // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
     vec3 Kd; // Refletância difusa
@@ -160,6 +149,10 @@ void main()
     }
     else if(object_id == SEAWEED0){
         color = v_color;
+    }
+    else if(object_id == SEAWEED1){
+        color = v_color;
+
     }
     else{
         color.rgb = lambert_diffuse_term + ambient_term + blinn_phong_specular_term;
