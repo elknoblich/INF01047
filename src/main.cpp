@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <iostream>
 #include <list>
+#include <memory>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>  // Criação de contexto OpenGL 3.3
@@ -284,34 +285,32 @@ int main(int argc, char *argv[]) {
    AABB aabb_shark(g_VirtualScene["Object_TexMap_0"].bbox_min, g_VirtualScene["Object_TexMap_0"].bbox_max, model, -1, "Object_TexMap_0");
    shark_p = &aabb_shark;
 
-   /*******************FISH===FISH*****************/
-   int fish_id = 0;
+   /*******************FISH===FISH*****************/ int fish_id = 0;
    std::map<AABB *, bool> is_eated;
    std::map<AABB *, bool> is_eatable;
    std::list<AABB *> fish_list;
-
    model = Matrix_Translate(-80.0f, 2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish1(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
-                   "Object_BlueTaT.jpg");
-   is_eatable[&aabb_fish1] = false;
-   is_eated[&aabb_fish1]   = false;
-   fish_list.push_back(&aabb_fish1);
+   AABB *aabb_fish1 =
+       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
+   is_eatable[aabb_fish1] = false;
+   is_eated[aabb_fish1]   = false;
+   fish_list.push_back(aabb_fish1);
    ++fish_id;
 
    model = Matrix_Translate(-80.0f, 0.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish2(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
-                   "Object_BlueTaT.jpg");
-   is_eatable[&aabb_fish2] = false;
-   is_eated[&aabb_fish2]   = false;
-   fish_list.push_back(&aabb_fish2);
+   AABB *aabb_fish2 =
+       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
+   is_eatable[aabb_fish2] = false;
+   is_eated[aabb_fish2]   = false;
+   fish_list.push_back(aabb_fish2);
    ++fish_id;
 
    model = Matrix_Translate(-80.0f, -2.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(1.0f, 1.0f, 1.0f);
-   AABB aabb_fish3(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
-                   "Object_BlueTaT.jpg");
-   is_eatable[&aabb_fish3] = false;
-   is_eated[&aabb_fish3]   = false;
-   fish_list.push_back(&aabb_fish3);
+   AABB *aabb_fish3 =
+       new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id, "Object_BlueTaT.jpg");
+   is_eatable[aabb_fish3] = false;
+   is_eated[aabb_fish3]   = false;
+   fish_list.push_back(aabb_fish3);
    ++fish_id;
 
    /**Static objects**/
@@ -325,23 +324,6 @@ int main(int argc, char *argv[]) {
    shark_collision_map[aabb_wall_1] = false;
    ++current_sobj_id;
 
-   model = Matrix_Translate(-80.0f, 0.0f, 10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
-   AABB aabb_wall_2(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
-   shark_arena_walls.push_back(aabb_wall_2);
-   shark_collision_map[aabb_wall_2] = false;
-   ++current_sobj_id;
-
-   model = Matrix_Translate(-80.0f, 0.0f, -10.0f) * Matrix_Rotate_X(3.1415f / 2.0f) * Matrix_Scale(40.f, 0.1f, 10.0f);
-   AABB aabb_wall_3(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
-   shark_arena_walls.push_back(aabb_wall_3);
-   shark_collision_map[aabb_wall_3] = false;
-   ++current_sobj_id;
-
-   model = Matrix_Translate(-90.0f, 0.0f, 0.0f) * Matrix_Rotate_Z(3.1415f / 2.0f) * Matrix_Scale(10.f, 0.1f, 10.0f);
-   AABB aabb_wall_4(g_VirtualScene["Cube3"].bbox_min, g_VirtualScene["Cube3"].bbox_max, model, current_sobj_id, "Cube3");
-   shark_collision_map[aabb_wall_4] = false;
-   shark_arena_walls.push_back(aabb_wall_4);
-   ++current_sobj_id;
 
    float t_first[current_sobj_id];
    float t_last[current_sobj_id];
@@ -373,6 +355,15 @@ int main(int argc, char *argv[]) {
 
          g_camera_view_vector = glm::vec4(x, -y, z, 0.0f);
 
+         for (const auto &current_aabb: fish_list) {
+
+            if (is_eatable[current_aabb] && g_LeftMouseButtonPressed) {
+               is_eated[current_aabb] = true;
+
+               aabb_shark.update_aabb(aabb_shark.get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                      g_VirtualScene["Object_TexMap_0"].bbox_max);
+            }
+         }
 
       } else if (!g_is_free_cam) {
 
@@ -509,7 +500,7 @@ int main(int argc, char *argv[]) {
 
       float tmin;
       glm::vec4 intersec_point;
-      SPHERE interaction_sphere(g_camera_position_c, 2.0f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+      SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
       for (const auto &current_aabb: fish_list) {
 
          glm::mat4 current_model = current_aabb->get_model();
@@ -524,27 +515,26 @@ int main(int argc, char *argv[]) {
             glUniform1i(g_object_id_uniform, FISH);
             DrawVirtualObject("Object_BlueTaT.jpg");
 
+            printf("Ray Origin: (%f, %f, %f)\n", g_camera_position_c.x, g_camera_position_c.y, g_camera_position_c.z);
+            printf("AABB Min: (%f, %f, %f)\n", current_aabb->get_min().x, current_aabb->get_min().y, current_aabb->get_min().z);
+            printf("AABB Max: (%f, %f, %f)\n", current_aabb->get_max().x, current_aabb->get_max().y, current_aabb->get_max().z);
             is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
                 ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb, tmin, intersec_point);
+            //printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n",
+            //     is_eatable[current_aabb]);
          }
 
          ++i;
       }
 
-      //bool button_ray_intersec =
-      //  ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), aabb_button, tmin, intersec_point);
 
-      //if (Sphere_to_AABB_intersec(interaction_sphere, aabb_button) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && button_ray_intersec) {
-      //}
-
-
-      animateAABB(aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
+      animateAABB(*aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
                   glm::vec3(-80.0f, 2.0f, 0.0f), speed, current_time);
 
-      animateAABB(aabb_fish2, glm::vec3(-80.0f, 0.0f, 0.0f), glm::vec3(-90.0f, 2.0f, -2.0f), glm::vec3(-70.0f, 2.0f, 2.0f),
+      animateAABB(*aabb_fish2, glm::vec3(-80.0f, 0.0f, 0.0f), glm::vec3(-90.0f, 2.0f, -2.0f), glm::vec3(-70.0f, 2.0f, 2.0f),
                   glm::vec3(-80.0f, 0.0f, 0.0f), speed, current_time);
 
-      animateAABB(aabb_fish3, glm::vec3(-80.0f, -2.0f, 0.0f), glm::vec3(-60.0f, 2.0f, 3.0f), glm::vec3(-100.0f, 2.0f, -3.0f),
+      animateAABB(*aabb_fish3, glm::vec3(-80.0f, -2.0f, 0.0f), glm::vec3(-60.0f, 2.0f, 3.0f), glm::vec3(-100.0f, 2.0f, -3.0f),
                   glm::vec3(-80.0f, -2.0f, 0.0f), speed, current_time);
 
 
@@ -567,26 +557,22 @@ glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3
    float uuu = uu * u;
    float ttt = tt * t;
 
-   glm::vec3 p = uuu * p0; // First term
-   p += 3 * uu * t * p1;   // Second term
-   p += 3 * u * tt * p2;   // Third term
-   p += ttt * p3;          // Fourth term
+   glm::vec3 p = uuu * p0;
+   p += 3 * uu * t * p1;
+   p += 3 * u * tt * p2;
+   p += ttt * p3;
 
    return p;
 }
 
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
-   // Use modulo to loop the animation over the duration of the Bezier curve
-   float t = fmod(elapsedTime * speed, 1.0f); // t will keep looping from 0 to 1
+   float t = fmod(elapsedTime * speed, 1.0f);
 
    glm::vec3 newPosition = Bezier(t, p0, p1, p2, p3);
 
-   // Update the AABB position using the calculated Bezier curve point
-   glm::vec3 bbox_min_local = box.get_min();
-   glm::vec3 bbox_max_local = box.get_max();
-   glm::mat4 newModelMatrix = glm::translate(glm::mat4(1.0f), newPosition);
+   glm::mat4 newModelMatrix = Matrix_Translate(newPosition.x, newPosition.y, newPosition.z);
 
-   box.update_aabb(newModelMatrix, bbox_min_local, bbox_max_local);
+   box.update_aabb(newModelMatrix, g_VirtualScene[box.get_type()].bbox_min, g_VirtualScene[box.get_type()].bbox_max);
 }
 
 void LoadTextureImage(const char *filename) {
@@ -1142,7 +1128,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
          g_camera_view_vector = g_camera_lookat_l - g_camera_position_c;
 
       } else {
-         const float DISTANCE_FACTOR = 5.0f;
+         const float DISTANCE_FACTOR = 2.0f;
          glm::vec4 forward_direction = glm::vec4(-shark_p->get_model()[0].x, -shark_p->get_model()[0].y, -shark_p->get_model()[0].z, 0.0f);
          forward_direction           = forward_direction / norm(forward_direction);
          g_camera_position_c         = shark_p->get_center_point() + forward_direction * DISTANCE_FACTOR;

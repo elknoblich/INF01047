@@ -46,11 +46,28 @@ void AABB::update_aabb(glm::vec4 center_point, glm::vec4 size) {
 };
 
 void AABB::update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 bbox_max_local) {
-   glm::vec4 bbox_min_global = new_model * glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f);
-   glm::vec4 bbox_max_global = new_model * glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f);
-   this->bbox_min            = glm::vec3(bbox_min_global.x, bbox_min_global.y, bbox_min_global.z);
-   this->bbox_max            = glm::vec3(bbox_max_global.x, bbox_max_global.y, bbox_max_global.z);
-   this->model               = new_model;
+   glm::vec4 corners[8] = {
+       glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f), glm::vec4(bbox_max_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f),
+       glm::vec4(bbox_min_local.x, bbox_max_local.y, bbox_min_local.z, 1.0f), glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_min_local.z, 1.0f),
+       glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_max_local.z, 1.0f), glm::vec4(bbox_max_local.x, bbox_min_local.y, bbox_max_local.z, 1.0f),
+       glm::vec4(bbox_min_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f), glm::vec4(bbox_max_local.x, bbox_max_local.y, bbox_max_local.z, 1.0f)};
+
+   glm::vec4 transformed_corners[8];
+   for (int i = 0; i < 8; ++i) {
+      transformed_corners[i] = new_model * corners[i];
+   }
+
+   glm::vec3 min_transformed = glm::vec3(transformed_corners[0]);
+   glm::vec3 max_transformed = glm::vec3(transformed_corners[0]);
+
+   for (int i = 1; i < 8; ++i) {
+      min_transformed = glm::min(min_transformed, glm::vec3(transformed_corners[i]));
+      max_transformed = glm::max(max_transformed, glm::vec3(transformed_corners[i]));
+   }
+
+   this->bbox_min = min_transformed;
+   this->bbox_max = max_transformed;
+   this->model    = new_model;
 }
 glm::vec4 AABB::get_center_point() {
    glm::vec4 center_point = glm::vec4((this->bbox_min.x + this->bbox_max.x) / 2, (this->bbox_min.y + this->bbox_max.y) / 2,
