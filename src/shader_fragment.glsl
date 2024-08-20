@@ -19,16 +19,12 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Identificador que define qual objeto está sendo desenhado no momento
-#define SPHERE 0
-#define BUNNY  1
-#define PLANE  2
-#define CUBE 3
-#define BUTTON 4
-#define SHARK  5
-#define GROUND 6
-#define FISH 7
-#define CUBE2 8
-#define CUBE3 9
+#define CUBE   0
+#define SHARK  1
+#define GROUND 2
+#define FISH   3
+#define CUBE2  4
+#define CUBE3  5
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -86,33 +82,7 @@ void main()
     vec3 Ka; // Refletância ambiente
     float q;
 
-    if(object_id == BUTTON){
-        U = texcoords.x;
-        V = texcoords.y;
-        Kd = texture(Button0, vec2(U,V)).rgb;
-        Ks = vec3(0.0,0.2,0.2);
-        Ka = vec3(0.0,0.0,0.0);
-        q = 1.0;
-    }
-    else if ( object_id == PLANE)
-    {
-        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
-        U = texcoords.x * 2;
-        V = texcoords.y * 2;
-        Kd = texture(Ground, vec2(U,V)).rgb;
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.1,0.1);
-        q = 1.0;
-    }
-    else if (object_id == CUBE){
-        U = texcoords.x *2  ;
-        V = texcoords.y * 15 ;
-
-        Kd = texture(Wall, vec2(U,V)).rgb;
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.1,0.1);
-        q = 0.2;
-    }else if(object_id == SHARK){
+    if(object_id == SHARK){
         U = texcoords.x;
         V = texcoords.y;
         Kd = texture(Shark0, vec2(U,V)).rgb;

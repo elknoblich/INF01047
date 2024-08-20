@@ -104,7 +104,7 @@ void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
-glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
+glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
 
 struct SceneObject {
@@ -442,15 +442,12 @@ int main(int argc, char *argv[]) {
       glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
       glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-#define BUNNY  1
-#define PLANE  2
-#define CUBE   3
-#define BUTTON 4
-#define SHARK  5
-#define GROUND 6
-#define FISH   7
-#define CUBE2  8
-#define CUBE3  9
+#define CUBE   0
+#define SHARK  1
+#define GROUND 2
+#define FISH   3
+#define CUBE2  4
+#define CUBE3  5
 
       int i = 0;
 
@@ -459,23 +456,12 @@ int main(int argc, char *argv[]) {
          glm::mat4 current_model = current_aabb.get_model();
          std::string type        = current_aabb.get_type();
 
-         if (type == "Cube") {
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            glUniform1i(g_object_id_uniform, CUBE);
-            DrawVirtualObject("Cube");
-            //cam_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(cam_aabb, current_aabb, velocity, t_first[i], t_last[i]);
-         }
 
-         else if (type == "Cube2") {
+         if (type == "Cube2") {
             glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
             glUniform1i(g_object_id_uniform, CUBE2);
             DrawVirtualObject("Cube2");
             shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(aabb_shark, current_aabb, velocity, t_first[i], t_last[i]);
-         } else if (type == "Cube3") {
-            //glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
-            //glUniform1i(g_object_id_uniform, CUBE3);
-            // DrawVirtualObject("Cube3");
-            //shark_collision_map[current_aabb] = moving_AABB_to_AABB_intersec(aabb_shark, current_aabb, velocity, t_first[i], t_last[i]);
          }
          ++i;
       }
@@ -491,7 +477,9 @@ int main(int argc, char *argv[]) {
 
       float tmin;
       glm::vec4 intersec_point;
+
       SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, g_camera_view_vector);
+
       for (const auto &current_aabb: fish_list) {
 
          glm::mat4 current_model = current_aabb->get_model();
@@ -506,16 +494,9 @@ int main(int argc, char *argv[]) {
             glUniform1i(g_object_id_uniform, FISH);
             DrawVirtualObject("Object_BlueTaT.jpg");
 
-            printf("Ray Origin: (%f, %f, %f)\n", g_camera_position_c.x, g_camera_position_c.y, g_camera_position_c.z);
-            printf("AABB Min: (%f, %f, %f)\n", current_aabb->get_min().x, current_aabb->get_min().y, current_aabb->get_min().z);
-            printf("AABB Max: (%f, %f, %f)\n", current_aabb->get_max().x, current_aabb->get_max().y, current_aabb->get_max().z);
             is_eatable[current_aabb] = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, *current_aabb) &&
                 ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), *current_aabb, tmin, intersec_point);
-            //printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n",
-            //     is_eatable[current_aabb]);
          }
-
-         ++i;
       }
 
 
@@ -541,7 +522,8 @@ int main(int argc, char *argv[]) {
    return 0;
 }
 
-glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+
    float u   = 1 - t;
    float tt  = t * t;
    float uu  = u * u;
@@ -557,13 +539,14 @@ glm::vec3 Bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3
 }
 
 void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
+
    float t = fmod(elapsedTime * speed, 1.0f);
 
-   glm::vec3 newPosition = Bezier(t, p0, p1, p2, p3);
+   glm::vec3 new_position = cubic_bezier(t, p0, p1, p2, p3);
 
-   glm::mat4 newModelMatrix = Matrix_Translate(newPosition.x, newPosition.y, newPosition.z);
+   glm::mat4 new_model_matrix = Matrix_Translate(new_position.x, new_position.y, new_position.z);
 
-   box.update_aabb(newModelMatrix, g_VirtualScene[box.get_type()].bbox_min, g_VirtualScene[box.get_type()].bbox_max);
+   box.update_aabb(new_model_matrix, g_VirtualScene[box.get_type()].bbox_min, g_VirtualScene[box.get_type()].bbox_max);
 }
 
 void LoadTextureImage(const char *filename) {
