@@ -59,7 +59,11 @@
     Também foi passado para o tubarão a câmera livre, findando a ser a sua visão. Com isto, a interação com os botões passou a ser com os bichos do cenário. O antigo ato de apertar o botão virou a ação de comer um bicho. Cada bicho aumenta a capacidade tubarão: aumentando seu tamanho, sua velocidade e seu raio de interação (da esfera). Cada bicho aumenta a capacidade do tubarão conforme sua "nutritividade" (peixe > golfinho > baleia).   
 </p>
 
-## Inserir imagens aqui
+## Imagens
+
+![image](https://github.com/user-attachments/assets/3e82c662-8a25-4ba4-bb97-04eb3164a4d0)
+![image](https://github.com/user-attachments/assets/ba4b638d-bb7e-4767-9ff0-f640dea56158)
+![image](https://github.com/user-attachments/assets/2e6c1741-3e1d-4539-8caf-ebde00b38609)
 
 ## Manual
 <p align="justify">
