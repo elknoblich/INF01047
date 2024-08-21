@@ -1,6 +1,7 @@
 #include "../include/collisions.hpp"
 /*
- * Referencias:
+ * FONTE:
+ * Os testes de interssecção foram construídos seguindo estas referencias:
  * Real-Time Collision Detection, Christer Ericson
  * Game Physics Cookbook, Gabor Szauer
  * Real-Time Rendering
@@ -24,6 +25,7 @@ glm::vec3 AABB::get_max() const { return bbox_max; };
 glm::mat4 AABB::get_model() const { return model; };
 std::string AABB::get_type() const { return type; };
 
+//FONTE: Correção dos pontos max e min feitos pelo ChatGPT
 void AABB::update_aabb(glm::mat4 new_model, glm::vec3 bbox_min_local, glm::vec3 bbox_max_local) {
    glm::vec4 corners[8] = {
        glm::vec4(bbox_min_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f), glm::vec4(bbox_max_local.x, bbox_min_local.y, bbox_min_local.z, 1.0f),

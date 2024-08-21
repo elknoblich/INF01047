@@ -27,6 +27,8 @@ uniform mat4 projection;
 #define CUBE3  4
 #define SEAWEED0 5
 #define SEAWEED1 6
+#define DOLPHIN 7
+#define WHALE 8
 
 uniform int object_id;
 
@@ -42,6 +44,8 @@ uniform sampler2D Fish;
 uniform sampler2D Sand;
 uniform sampler2D Seaweed0;
 uniform sampler2D Seaweed1;
+uniform sampler2D Dolphin;
+uniform sampler2D Whale;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -106,6 +110,24 @@ void main()
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
+    }else if(object_id == DOLPHIN)
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+        Kd = texture(Dolphin, vec2(U,V)).rgb;
+        //Ka = texture(Shark1, vec2(U,V)).rgb;
+        Ka = vec3(0.0,0.0,0.1);
+        //Ks = texture(Shark2, vec2(U,V)).rgb;
+        Ks = vec3(0.0,0.0,0.1);
+        q = 0.8;
+
+    }else if(object_id == WHALE){
+        U = texcoords.x;
+        V = texcoords.y;
+        Kd = texture(Whale, vec2(U,V)).rgb;
+        Ka = vec3(0.0,0.0,0.1);
+        Ks = vec3(0.0,0.0,0.1);
+        q = 0.8;
     }
     else
     {

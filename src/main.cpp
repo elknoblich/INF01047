@@ -105,7 +105,7 @@ void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
-void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
+void animate_whale(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime);
 void draw_shark();
 void draw_fishes();
 void draw_objects();
@@ -175,7 +175,10 @@ std::list<AABB *> fish_list;
 std::map<AABB, bool> shark_collision_map;
 std::list<AABB> shark_arena_walls;
 std::list<glm::mat4> seaweeds_models;
-float s_speed = 0.5f;
+float s_speed         = 0.5f;
+float g_radius        = 1.5f;
+bool is_eatable_whale = false;
+bool is_eated_whale   = false;
 #define CUBE     0
 #define SHARK    1
 #define FISH     2
@@ -183,7 +186,8 @@ float s_speed = 0.5f;
 #define CUBE3    4
 #define SEAWEED0 5
 #define SEAWEED1 6
-
+#define DOLPHIN  7
+#define WHALE    8
 int main(int argc, char *argv[]) {
 
    int success = glfwInit();
@@ -243,6 +247,8 @@ int main(int argc, char *argv[]) {
    LoadTextureImage("../../data/aerial_beach_01_diff_4k.jpg");
    LoadTextureImage("../../data/seaweed0.jpeg");
    LoadTextureImage("../../data/seaweed1.png");
+   LoadTextureImage("../../data/dolphin.png");
+   LoadTextureImage("../../data/whale.jpg");
 
    ObjModel cubemodel("../../data/cube.obj");
    ComputeNormals(&cubemodel);
@@ -272,6 +278,14 @@ int main(int argc, char *argv[]) {
    ComputeNormals(&seaweed1model);
    BuildTrianglesAndAddToVirtualScene(&seaweed1model);
 
+   ObjModel dolphinmodel("../../data/dolphin.obj");
+   ComputeNormals(&dolphinmodel);
+   BuildTrianglesAndAddToVirtualScene(&dolphinmodel);
+
+   ObjModel whalemodel("../../data/whale.obj");
+   ComputeNormals(&whalemodel);
+   BuildTrianglesAndAddToVirtualScene(&whalemodel);
+
    if (argc > 1) {
       ObjModel model(argv[1]);
       BuildTrianglesAndAddToVirtualScene(&model);
@@ -297,6 +311,10 @@ int main(int argc, char *argv[]) {
 
    /*******************FISH===FISH*****************/
    create_fishes();
+
+   model = Matrix_Translate(-80.0f, 1.0f, 0.0f) * Matrix_Rotate_Y(3.1415f / 2.0f) * Matrix_Scale(8.0f, 8.0f, 8.0f);
+   AABB aabb_whale(g_VirtualScene["whale"].bbox_min, g_VirtualScene["whale"].bbox_max, model, -1, "whale");
+
    /**Static objects**/
    int current_sobj_id = 0;
    model               = Matrix_Translate(-80.0f, -10.0f, 0.0f) * Matrix_Scale(80.f, 0.1f, 80.0f);
@@ -361,15 +379,18 @@ int main(int argc, char *argv[]) {
       update_fishes_eatability();
       update_shark_collision_map(velocity, t_first, t_last);
 
-      /*
-      animateAABB(*aabb_fish1, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-70.0f, 2.0f, 2.0f), glm::vec3(-90.0f, 2.0f, -2.0f),
-                  glm::vec3(-80.0f, 2.0f, 0.0f), speed, current_time);
+      if (s_speed > 1.2f && !is_eated_whale) {
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(aabb_whale.get_model()));
+         glUniform1i(g_object_id_uniform, WHALE);
+         DrawVirtualObject("whale");
 
-      animateAABB(*aabb_fish2, glm::vec3(-80.0f, 0.0f, 0.0f), glm::vec3(-90.0f, 2.0f, -2.0f), glm::vec3(-70.0f, 2.0f, 2.0f),
-                  glm::vec3(-80.0f, 0.0f, 0.0f), speed, current_time);
+         animate_whale(aabb_whale, glm::vec3(-80.0f, 2.0f, 0.0f), glm::vec3(-50.0f, -4.0f, 1.0f), glm::vec3(-20.0f, 2.0f, -2.0f),
+                       glm::vec3(-80.0f, 2.0f, 0.0f), 0.04, current_time);
 
-      animateAABB(*aabb_fish3, glm::vec3(-80.0f, -2.0f, 0.0f), glm::vec3(-60.0f, 2.0f, 3.0f), glm::vec3(-100.0f, 2.0f, -3.0f),
-                  glm::vec3(-80.0f, -2.0f, 0.0f), speed, current_time);*/
+         SPHERE interaction_sphere(g_camera_position_c, g_radius, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+         is_eatable_whale = g_is_free_cam && Sphere_to_AABB_intersec(interaction_sphere, aabb_whale) &&
+             ray_to_AABB_intersec(g_camera_position_c, g_camera_view_vector / norm(g_camera_view_vector), aabb_whale);
+      }
 
 
       TextRendering_ShowFramesPerSecond(window);
@@ -441,12 +462,18 @@ void draw_fishes() {
          glUniform1i(g_object_id_uniform, FISH);
          DrawVirtualObject("Object_BlueTaT.jpg");
       }
+      if (type == "dolphin") {
+
+         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(current_model));
+         glUniform1i(g_object_id_uniform, DOLPHIN);
+         DrawVirtualObject("dolphin");
+      }
    }
 }
 
 void update_fishes_eatability() {
 
-   SPHERE interaction_sphere(g_camera_position_c, 1.4f, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+   SPHERE interaction_sphere(g_camera_position_c, g_radius, -1, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
    for (const auto &current_aabb: fish_list) {
 
@@ -481,16 +508,24 @@ glm::vec3 cubic_bezier(float t, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::v
 
    return p;
 }
-void animateAABB(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
+void animate_whale(AABB &box, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, float speed, float elapsedTime) {
 
    float t = fmod(elapsedTime * speed, 1.0f);
 
    glm::vec3 new_position = cubic_bezier(t, p0, p1, p2, p3);
 
-   glm::mat4 new_model_matrix = Matrix_Translate(new_position.x, new_position.y, new_position.z);
+   glm::mat4 rotation_matrix = Matrix_Rotate_Y(-3.1415f / 2.0f);
+
+   if (t > 0.5) {
+      rotation_matrix = Matrix_Rotate_Y(3.1415f / 2.0f);
+   }
+
+   glm::mat4 new_model_matrix = Matrix_Translate(new_position.x, new_position.y, new_position.z) * rotation_matrix * Matrix_Scale(6.0f, 6.0f, 6.0f);
 
    box.update_aabb(new_model_matrix, g_VirtualScene[box.get_type()].bbox_min, g_VirtualScene[box.get_type()].bbox_max);
 }
+
+//FONTE: ChatGPT usado para descobrir o forward_direction e corrigir a resposta da colisão
 void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity, float t_first[], float t_last[]) {
    g_camera_lookat_l    = shark_p->get_center_point();
    g_camera_position_c  = glm::vec4(10.0f, 0.0f, 0.0f, 0.0f) + g_camera_lookat_l;
@@ -540,8 +575,9 @@ void shark_movement(float &prev_time, float &shark_rotation, glm::vec4 &velocity
    int count   = 0;
    float speed = s_speed;
    for (const auto &current_aabb: shark_arena_walls) {
+
       if (shark_collision_map[current_aabb]) {
-         // Adjust velocity based on the time to collision
+
          velocity += velocity * t_first[count] * delta_t;
 
          velocity = g_camera_up_vector;
@@ -646,6 +682,8 @@ void LoadShadersFromFiles() {
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Sand"), 4);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Seaweed0"), 5);
    glUniform1i(glGetUniformLocation(g_GpuProgramID, "Seaweed1"), 6);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Dolphin"), 7);
+   glUniform1i(glGetUniformLocation(g_GpuProgramID, "Whale"), 8);
 
    glUseProgram(0);
 }
@@ -963,15 +1001,36 @@ void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
 
          if (is_eatable[current_aabb] && !is_eated[current_aabb]) {
 
-            is_eated[current_aabb] = true;
-            shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
-                                 g_VirtualScene["Object_TexMap_0"].bbox_max);
-            s_speed += 0.2;
+            if (current_aabb->get_type() == "Object_TexMap_0") {
+               is_eated[current_aabb] = true;
+               shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.1f, 1.1f, 1.1f), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                    g_VirtualScene["Object_TexMap_0"].bbox_max);
+               s_speed += 0.1;
+               g_radius += 0.2;
+
+            } else {
+
+               is_eated[current_aabb] = true;
+               shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.3f, 1.3f, 1.3f), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                                    g_VirtualScene["Object_TexMap_0"].bbox_max);
+               s_speed += 0.2;
+               g_radius += 0.4;
+            }
          }
+      }
+
+      if (is_eatable_whale) {
+
+         is_eated_whale = true;
+         shark_p->update_aabb(shark_p->get_model() * Matrix_Scale(1.7f, 1.7f, 1.7f), g_VirtualScene["Object_TexMap_0"].bbox_min,
+                              g_VirtualScene["Object_TexMap_0"].bbox_max);
+         s_speed += 5;
+         g_radius += 5;
       }
       glfwGetCursorPos(window, &g_LastCursorPosX, &g_LastCursorPosY);
       g_LeftMouseButtonPressed = true;
    }
+
    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 
       g_LeftMouseButtonPressed = false;
@@ -1161,6 +1220,8 @@ void TextRendering_ShowFramesPerSecond(GLFWwindow *window) {
    TextRendering_PrintString(window, buffer, 1.0f - (numchars + 1) * charwidth, 1.0f - lineheight, 1.0f);
 }
 
+
+//FONTE: As duas funções a seguir foram pedidas para o ChatGPT fazer.
 void create_fishes() {
 
    int fish_id = 0;
@@ -1171,9 +1232,26 @@ void create_fishes() {
       float z        = -80.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (160.0f)));
       float rotation = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2.0f * M_PI)));
 
-      glm::mat4 model = Matrix_Translate(x, y, z) * Matrix_Rotate_Y(rotation) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+      glm::mat4 model = Matrix_Translate(x, y, z) * Matrix_Rotate_Y(rotation) * Matrix_Scale(0.3f, 0.3f, 0.3f);
       AABB *aabb_fish = new AABB(g_VirtualScene["Object_BlueTaT.jpg"].bbox_min, g_VirtualScene["Object_BlueTaT.jpg"].bbox_max, model, fish_id,
                                  "Object_BlueTaT.jpg");
+
+      is_eatable[aabb_fish] = false;
+      is_eated[aabb_fish]   = false;
+      fish_list.push_back(aabb_fish);
+      ++fish_id;
+   }
+
+   for (int i = 0; i < 40; ++i) {
+      float x        = -80.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (160.0f)));
+      float y        = -9.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (11.0f)));
+      float z        = -80.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (160.0f)));
+      float rotation = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2.0f * M_PI)));
+
+      glm::mat4 model = Matrix_Identity();
+      AABB *aabb_fish = new AABB(g_VirtualScene["dolphin"].bbox_min, g_VirtualScene["dolphin"].bbox_max, model, fish_id, "dolphin");
+      model           = Matrix_Translate(x, y, z) * Matrix_Rotate_Y(rotation) * Matrix_Scale(1.0f, 1.0f, 1.0f);
+      aabb_fish->update_aabb(model, g_VirtualScene["dolphin"].bbox_min, g_VirtualScene["dolphin"].bbox_max);
 
       is_eatable[aabb_fish] = false;
       is_eated[aabb_fish]   = false;

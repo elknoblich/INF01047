@@ -22,6 +22,7 @@ out vec4 v_color;
 #define CUBE3  4
 #define SEAWEED0 5
 #define SEAWEED1 6
+#define DOLPHIN 7
 
 uniform sampler2D Shark0;
 uniform sampler2D Shark1;
@@ -30,6 +31,8 @@ uniform sampler2D Fish;
 uniform sampler2D Sand;
 uniform sampler2D Seaweed0;
 uniform sampler2D Seaweed1;
+uniform sampler2D Dolphin;
+uniform sampler2D Whale;
 void main()
 {
 
